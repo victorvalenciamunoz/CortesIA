@@ -69,3 +69,16 @@ Formato: contexto → decisión → alternativas descartadas.
   va en orden fijo porque cada mensaje puede cambiar el estado (un pacto firmado). Los fallos de un jugador quedan
   en la crónica como `PlayerFaulted`, visibles solo para esa corte.
 - Alternativas: pedirlas una tras otra (igual de correcto, más lento con modelos).
+
+## 011 — Consola con Spectre.Console
+- Contexto: el paso 8 pide una consola jugable, para que el autor entienda el juego antes de meter IA.
+- Decisión:
+  - Spectre.Console 0.57.2 (MIT, mantenida, compila para .NET 10): tablas y menús que se eligen con las flechas.
+  - La persona es un `ICourtPlayer` más (`ConsolePlayer`), con su `CourtView`. Los menús solo ofrecen jugadas legales,
+    pero `Match` valida igual, como hará con un modelo.
+  - Norte juega con la regla codiciosa y Sur al azar, para ver los dos rivales en una partida.
+  - Con `--mirar`, la corte del jugador también la lleva el codicioso y no pide nada: sirve para ver partidas enteras
+    y para comprobar en el CI que la consola no falla.
+  - `Narrator` pasa los eventos a frases fijas. Vive en la consola; en la Fase 1 será el texto de respaldo del cronista
+    y se moverá donde lo pida ese uso.
+- Alternativas: la consola de .NET sin paquetes (menús y tablas a mano); Terminal.Gui (ventanas completas, demasiado).

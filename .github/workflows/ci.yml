@@ -17,3 +17,5 @@ jobs:
       - run: dotnet test
       - name: Torneo de referencia (falla si hay errores, recursos negativos o fallos de jugador)
         run: dotnet run --project src/CortesIA.Evals -- 1000 1
+      - name: Partida de la consola en modo mirar (falla si la consola se rompe)
+        run: dotnet run --project src/CortesIA.Console -- 1 --mirar

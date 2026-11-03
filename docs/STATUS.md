@@ -1,6 +1,7 @@
 # Estado
 
-Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio) fusionada. PR #2 recoge los pasos 6 a 8.
+Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio) y PR #2 (pasos 6 y 7, rivales
+y torneo) fusionadas. La PR #3 trae el paso 8, la consola.
 
 ## Qué funciona
 - Solución con `CortesIA.Domain` y sus tests (xUnit v3), CI en GitHub Actions.
@@ -30,6 +31,11 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
 - `CortesIA.Evals`: torneo de referencia (`dotnet run --project src/CortesIA.Evals -- [partidas] [semilla]`). Rota
   los asientos, comprueba tras cada turno que ningún recurso sea negativo y saca las tablas en Markdown con el margen
   de error al 95 %. Devuelve error si hay fallos, y el CI lo ejecuta en cada PR.
+- `CortesIA.Console`: partida jugable (`dotnet run --project src/CortesIA.Console -- [semilla] [--mirar]`). Juegas como
+  Jugador contra Norte (codicioso) y Sur (aleatorio). Cada turno muestra la tabla de cortes y tus pactos, un menú de
+  diplomacia, Sí/No a las propuestas que te llegan y un menú con solo tus jugadas legales; después, lo que pasó en
+  frases (`Narrator`). La semilla permite repetir la partida. Con `--mirar` la corte del jugador la lleva el
+  codicioso y se ve la partida entera sin pedir nada (el CI la ejecuta así). `ConsolePlayer` es un `ICourtPlayer` más.
 
 ## Juez de la Fase 0: torneo de referencia (1.000 partidas, semilla 1)
 
@@ -64,7 +70,8 @@ Lectura:
 - [x] Paso 5: fin y ganador, crónica con visibilidad, vista por corte (2026-11-03)
 - [x] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso (2026-11-03)
 - [x] Paso 7: evals: 1.000 partidas aleatorio vs codicioso, tabla de victorias (2026-11-03)
-- [ ] Paso 8: consola jugable (Spectre.Console)
+- [x] Paso 8: consola jugable (Spectre.Console) (2026-11-03)
+- [ ] El autor juega en la consola y revisa las aclaraciones provisionales de REGLAS.md. Con eso se cierra la fase.
 
 ## Cómo se validó
 - Paso 1: 20 tests en `ActionValidatorTests` y `LegalActionsTests`. Uno comprueba que todo lo que `LegalActions`
@@ -82,3 +89,7 @@ Lectura:
   inválidas y en nombre ajeno, límite de mensajes, y 50 partidas completas aleatorio y codicioso sin ningún fallo
   y repetibles con la misma semilla) y 11 en `GreedyRivalTests`. 92 tests en total.
 - Paso 7: el propio torneo (tablas de arriba), que el CI ejecuta en cada PR.
+- Paso 8: 20 partidas en modo `--mirar` (semillas 1 a 20) sin fallos, en las que salen casi todos los tipos de
+  evento con su frase. Los menús se probaron con un guion que simula el teclado (Spectre.Console.Testing, fuera del
+  repo): proponer un comercio con un número fuera de rango que se vuelve a pedir, aceptar con «s», atacar, y el
+  comercio pactado como primera opción y legal. Falta que una persona juegue una partida entera.
