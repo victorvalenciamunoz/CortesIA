@@ -82,3 +82,14 @@ Formato: contexto → decisión → alternativas descartadas.
   - `Narrator` pasa los eventos a frases fijas. Vive en la consola; en la Fase 1 será el texto de respaldo del cronista
     y se moverá donde lo pida ese uso.
 - Alternativas: la consola de .NET sin paquetes (menús y tablas a mano); Terminal.Gui (ventanas completas, demasiado).
+
+## 012 — IChatClient con el adaptador de OpenAI; ejemplos de un solo fichero
+- Contexto: la Fase 1 compara la llamada a mano con la de la librería, y Foundry Local habla la API de OpenAI.
+- Decisión:
+  - `Microsoft.Extensions.AI.OpenAI` 10.11.0 (MIT): da `IChatClient` sobre la librería oficial de OpenAI (2.14.0, MIT).
+    El mismo adaptador vale para Foundry Local y para los proveedores en la nube compatibles con OpenAI.
+  - Los ejemplos de cada concepto van en `docs/conceptos/ejemplos/` como programas de un solo fichero
+    (`dotnet run fichero.cs`), separados del juego, con sus paquetes declarados en el propio fichero (`#:package`).
+- Alternativas: el SDK de Foundry Local 2.3.1 (arranca el servicio y carga el modelo desde código, pero trae su propio
+  motor, depende de una librería de OpenAI de terceros y su licencia es un fichero propio); un `IChatClient` propio
+  sobre HTTP (no enseña qué aporta la librería).
