@@ -23,6 +23,12 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   Aspire 13.6.4) y se abre en `http://localhost:18888`. `docs/conceptos/ejemplos/01-panel.cs` le envía las trazas
   (una por llamada, con prompt y respuesta) y las métricas (tokens, duración) con el SDK de OpenTelemetry 1.20.1 y su
   exportador OTLP (ver DECISIONS 013). Narra tres turnos y hace una llamada a un servidor apagado, que sale en rojo.
+- `CortesIA.Ai` (ver DECISIONS 014):
+  - `Chronicler`: pide al modelo que cuente un turno. Le pasa las frases fijas de `Narrator` (ahora en el dominio),
+    solo las que puede ver la corte que lee, con el prompt de `chronicler.prompt.md`. Límite de 20 s. Nunca lanza
+    excepciones: devuelve una `Narration` con el texto o con el motivo del fallo.
+  - `LocalModel.Create`: el cliente de Foundry Local sin reintentos, con `RecordingChatClient` (cada llamada como
+    `CallRecord`) y `UseOpenTelemetry`. `CallLog` guarda cada llamada como una línea JSON en un fichero.
 
 ## Qué falta
 - [x] Paso 1: llamada a mano, sin paquetes (2026-11-03)
@@ -30,7 +36,8 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - [x] Paso 3a: registro de cada llamada, a mano (`DelegatingChatClient`) y con `UseOpenTelemetry` (2026-11-03)
 - [x] Paso 3b: temperatura (por qué no cambia nada) y streaming (2026-11-03)
 - [x] Paso 3c: panel de telemetría para ver cada prompt y respuesta (2026-11-03)
-- [ ] Paso 4: el cronista narra cada turno en la consola, con las frases fijas si el modelo falla o tarda
+- [x] Paso 4a: el cronista (`CortesIA.Ai`) con sus tests, y `Narrator` al dominio (2026-11-03)
+- [ ] Paso 4b: el cronista narra cada turno en la consola; si falla o tarda, quedan los hechos
 - [ ] Paso 5: proveedor en la nube por configuración, con límite de llamadas (el proveedor lo elige el autor)
 - [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
 
@@ -59,6 +66,15 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   Para el cronista habrá que fijar un tiempo máximo propio.
 - Al leer la traza de OpenTelemetry, `activity.Tags` no trae los tokens: solo da los datos de texto. Hay que usar
   `TagObjects`. Un error mío, pero fácil de cometer.
+- **El cronista con el modelo de verdad** (tres turnos de la partida con semilla 7):
+  - Tarda 3,4 s, 10,3 s y 5,9 s (de 194 a 263 tokens de entrada y de 65 a 111 de salida). Con 10 s de límite
+    se cortó al menos un turno; el límite queda en 20 s.
+  - **Cortar la espera no para al modelo:** tras un turno cortado por tiempo, el siguiente falló al momento con
+    "Infer Request is busy" (HTTP 500), porque el servidor seguía escribiendo la respuesta anterior.
+  - Con el servidor apagado y sin reintentos, cada fallo tarda unos 2 s: es lo que tarda Windows en dar por
+    rechazada una conexión local.
+  - **Calidad:** un turno lo copia casi palabra por palabra; otro se equivoca de corte (dice que atacó Norte y fue
+    Jugador), aunque el prompt pide no inventar.
 - El puerto es fijo (54311) porque está puesto en la configuración de Foundry (`foundry config show`).
 - Un texto con acentos pasado a `curl` desde Git Bash llega mal codificado y el servidor lo rechaza; desde C# va bien.
 
@@ -75,3 +91,8 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   de que `ChatOptions.TopK` no llega al servidor (tres respuestas idénticas a temperatura 1,5).
 - Paso 3c: el ejemplo del panel con el dashboard en marcha; la API del propio dashboard (`/api/telemetry/spans`)
   confirma que llegaron las cuatro llamadas y que la última trae el error de los 4 intentos.
+- Paso 4a: 9 tests en `CortesIA.Ai.Tests` con un modelo falso (narración, prompt y hechos, solo lo visible, nada que
+  contar, modelo que falla, que se cuelga, que responde en blanco; registro de llamadas buenas, fallidas y en
+  fichero) y 21 en `NarratorTests` (una frase por cada tipo de evento, y un test que avisa si aparece un evento sin
+  frase). 122 tests en total. Además, un guion fuera del repo que juega tres turnos y los narra con el modelo de
+  verdad, encendido y apagado.
