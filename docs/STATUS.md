@@ -32,7 +32,8 @@ y torneo) fusionadas. La PR #3 trae el paso 8, la consola.
   los asientos, comprueba tras cada turno que ningún recurso sea negativo y saca las tablas en Markdown con el margen
   de error al 95 %. Devuelve error si hay fallos, y el CI lo ejecuta en cada PR.
 - `CortesIA.Console`: partida jugable (`dotnet run --project src/CortesIA.Console -- [semilla] [--mirar]`). Juegas como
-  Jugador contra Norte (codicioso) y Sur (aleatorio). Cada turno muestra la tabla de cortes y tus pactos, un menú de
+  Jugador contra Norte (codicioso) y Sur (aleatorio). Empieza con una pantalla de cómo se juega (objetivo, recursos,
+  acciones), hecha con las constantes del dominio para que no se desfase. Cada turno muestra la tabla de cortes y tus pactos, un menú de
   diplomacia, Sí/No a las propuestas que te llegan y un menú con solo tus jugadas legales; después, lo que pasó en
   frases (`Narrator`). La semilla permite repetir la partida. Con `--mirar` la corte del jugador la lleva el
   codicioso y se ve la partida entera sin pedir nada (el CI la ejecuta así). `ConsolePlayer` es un `ICourtPlayer` más.

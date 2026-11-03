@@ -27,6 +27,11 @@ console.MarkupLine(watch
     ? "Mirando una partida: Jugador y Norte juegan con la regla codiciosa, Sur al azar."
     : "Juegas como [bold]Jugador[/]. Norte juega con la regla codiciosa y Sur al azar. Gana el mayor prestigio al acabar el turno 15.");
 console.MarkupLine($"[grey]Semilla {seed}. Para repetir la partida: dotnet run --project src/CortesIA.Console -- {seed}{(watch ? " " + WatchFlag : "")}[/]");
+Screen.ShowIntro(console);
+if (!watch)
+{
+    console.Prompt(new TextPrompt<string>("Pulsa Intro para empezar.").AllowEmpty());
+}
 
 while (!match.State.IsOver)
 {
