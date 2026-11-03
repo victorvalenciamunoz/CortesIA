@@ -1,17 +1,12 @@
 using CortesIA.Domain.Actions;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
+using static CortesIA.Domain.Tests.States;
 
 namespace CortesIA.Domain.Tests.Actions;
 
 public class ActionValidatorTests
 {
-    private static GameState With(CourtState court)
-    {
-        var start = GameState.Start();
-        return start with { Courts = start.Courts.SetItem(court.Id, court) };
-    }
-
     [Fact]
     public void Start_gives_every_court_the_initial_resources()
     {

@@ -16,4 +16,11 @@ public sealed record CourtState(
         Resource.Gold => Gold,
         _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null),
     };
+
+    public CourtState Change(Resource resource, int delta) => resource switch
+    {
+        Resource.Grain => this with { Grain = Grain + delta },
+        Resource.Gold => this with { Gold = Gold + delta },
+        _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null),
+    };
 }

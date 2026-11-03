@@ -1,17 +1,12 @@
 using CortesIA.Domain.Actions;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
+using static CortesIA.Domain.Tests.States;
 
 namespace CortesIA.Domain.Tests.Actions;
 
 public class LegalActionsTests
 {
-    private static GameState With(params CourtState[] courts)
-    {
-        var start = GameState.Start();
-        return start with { Courts = start.Courts.SetItems(courts.Select(c => KeyValuePair.Create(c.Id, c))) };
-    }
-
     [Fact]
     public void At_start_everything_is_allowed_against_both_rivals()
     {
