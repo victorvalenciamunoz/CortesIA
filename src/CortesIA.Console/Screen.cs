@@ -1,6 +1,8 @@
+using CortesIA.Domain.Actions;
 using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
+using CortesIA.Domain.Pacts;
 using CortesIA.Domain.Resolution;
 using Spectre.Console;
 
@@ -9,6 +11,36 @@ namespace CortesIA.Console;
 /// <summary>Draws the state of the game. When playing, only what your court may know: the public resources and your pacts.</summary>
 public static class Screen
 {
+    /// <summary>The rules in one screen, built from the domain's constants so it cannot drift from them.</summary>
+    public static void ShowIntro(IAnsiConsole console)
+    {
+        var goal = new Markup(
+            $"[bold]Objetivo:[/] acabar el turno {GameState.LastTurn} con más [bold]prestigio[/] que las otras dos cortes.\n" +
+            $"  • Ganar un ataque: +{Combat.PrestigeForVictory}.\n" +
+            $"  • Cumplir un pacto hasta el final: +{Pact.FulfilReward} para cada una.\n" +
+            $"  • Romper un pacto: −{Pact.BreakPenalty}, y se entera todo el mundo.\n\n" +
+            "[bold]Recursos:[/]\n" +
+            "  • Soldados: para atacar y defenderte.\n" +
+            "  • Grano: da de comer a los soldados (cada 2 comen 1 por turno). Si falta, desertan. Sin soldados y sin grano, quedas eliminado.\n" +
+            "  • Oro: para reclutar.\n\n" +
+            "[bold]Cada turno:[/] primero hablas (proponer pactos, opcional); luego eliges una acción, a ciegas y a la vez que las otras.");
+
+        var actions = new Table().Border(TableBorder.Simple)
+            .AddColumn("Acción")
+            .AddColumn("Qué hace")
+            .AddRow("Cultivar", $"+{TurnResolver.CultivateGrain} de grano")
+            .AddRow("Reclutar", $"gastas {ActionValidator.RecruitCost} de oro, ganas {TurnResolver.RecruitSoldiers} soldados")
+            .AddRow("Fortificar", "si te atacan este turno, tus soldados cuentan doble")
+            .AddRow("Atacar", $"gana quien tenga más soldados (±1 de suerte; si empatan, el defensor). Si ganas, le robas la mitad de su grano y oro y +{Combat.PrestigeForVictory} de prestigio")
+            .AddRow("Comerciar", "solo sale si el otro elige justo el intercambio contrario el mismo turno");
+
+        var hint = new Markup(
+            "[grey]Norte juega así: si le falta grano, cultiva; si le saca 2 soldados a alguien, le ataca; si no, recluta. " +
+            "Sur juega al azar. En esta fase los rivales no leen el texto de los mensajes.[/]");
+
+        console.Write(new Panel(new Rows(goal, actions, hint)).Header("Cómo se juega").Border(BoxBorder.Rounded).Expand());
+    }
+
     public static void ShowTurn(IAnsiConsole console, GameState state, CourtId? you)
     {
         console.WriteLine();
