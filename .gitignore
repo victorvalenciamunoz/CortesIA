@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Written by the Intel GPU driver when Foundry Local loads a model from this folder
+kernel.errors.txt
