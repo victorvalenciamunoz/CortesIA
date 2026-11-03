@@ -19,13 +19,17 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   (`gen_ai.usage.input_tokens`, `gen_ai.input.messages`…). Se encadenan con `AsBuilder().Use(...).Build()`.
 - `docs/conceptos/ejemplos/01-temperatura-y-streaming.cs`: tres respuestas con cada combinación de temperatura y
   `top_k`, y una respuesta en streaming (`GetStreamingResponseAsync`) mostrando los trozos según llegan.
+- Panel de telemetría: el dashboard de Aspire, que se arranca con `aspire dashboard run --allow-anonymous` (CLI de
+  Aspire 13.6.4) y se abre en `http://localhost:18888`. `docs/conceptos/ejemplos/01-panel.cs` le envía las trazas
+  (una por llamada, con prompt y respuesta) y las métricas (tokens, duración) con el SDK de OpenTelemetry 1.20.1 y su
+  exportador OTLP (ver DECISIONS 013). Narra tres turnos y hace una llamada a un servidor apagado, que sale en rojo.
 
 ## Qué falta
 - [x] Paso 1: llamada a mano, sin paquetes (2026-11-03)
 - [x] Paso 2: la misma llamada con `IChatClient`, y comparar (2026-11-03)
 - [x] Paso 3a: registro de cada llamada, a mano (`DelegatingChatClient`) y con `UseOpenTelemetry` (2026-11-03)
 - [x] Paso 3b: temperatura (por qué no cambia nada) y streaming (2026-11-03)
-- [ ] Paso 3c: panel de telemetría para ver cada prompt y respuesta
+- [x] Paso 3c: panel de telemetría para ver cada prompt y respuesta (2026-11-03)
 - [ ] Paso 4: el cronista narra cada turno en la consola, con las frases fijas si el modelo falla o tarda
 - [ ] Paso 5: proveedor en la nube por configuración, con límite de llamadas (el proveedor lo elige el autor)
 - [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
@@ -69,3 +73,5 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Paso 3b: pruebas con `curl` de `top_p`, `top_k`, `do_sample`, `seed` y `metadata` (solo `metadata.top_k` cambia la
   respuesta), contrastadas con la referencia REST de Foundry Local; el ejemplo con `IChatClient`; y una prueba aparte
   de que `ChatOptions.TopK` no llega al servidor (tres respuestas idénticas a temperatura 1,5).
+- Paso 3c: el ejemplo del panel con el dashboard en marcha; la API del propio dashboard (`/api/telemetry/spans`)
+  confirma que llegaron las cuatro llamadas y que la última trae el error de los 4 intentos.

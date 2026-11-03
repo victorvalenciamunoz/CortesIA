@@ -93,3 +93,13 @@ Formato: contexto → decisión → alternativas descartadas.
 - Alternativas: el SDK de Foundry Local 2.3.1 (arranca el servicio y carga el modelo desde código, pero trae su propio
   motor, depende de una librería de OpenAI de terceros y su licencia es un fichero propio); un `IChatClient` propio
   sobre HTTP (no enseña qué aporta la librería).
+
+## 013 — Panel de telemetría: dashboard de Aspire con su CLI y OpenTelemetry
+- Contexto: el paso 3c pide ver cada llamada (prompt, respuesta, tokens, tiempo) en un panel.
+- Decisión:
+  - El dashboard de Aspire sin AppHost, arrancado con `aspire dashboard run --allow-anonymous`. El autor eligió
+    actualizar su CLI de Aspire (de 13.2.4 a 13.6.4, que trae ese comando) en vez de usar Docker.
+  - Para enviarle los datos, `OpenTelemetry` y `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.20.1 (Apache-2.0,
+    proyecto OpenTelemetry): recogen lo que escribe `UseOpenTelemetry` y lo mandan por OTLP al puerto 4317.
+- Alternativas: el contenedor de Docker del dashboard (Docker Desktop no estaba en marcha); escribir a mano el
+  protocolo OTLP (sin sentido); quedarse con el registro en consola (no deja navegar ni comparar llamadas).
