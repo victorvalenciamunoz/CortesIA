@@ -33,3 +33,12 @@ Formato: contexto → decisión → alternativas descartadas.
 - Decisión: la interfaz de jugador es asíncrona y admite cancelación. La partida aplica Cultivar (siempre legal)
   si el jugador falla, se pasa de tiempo o propone algo ilegal, y lo registra. La validación devuelve el motivo
   en texto, para reutilizarlo en el reintento de la Fase 2.
+
+## 007 — Azar detrás de `IDice` y combate como función pura
+- Contexto: el combate y el orden de los combates dependen del azar; los tests necesitan tiradas fijas y la Fase 3
+  necesitará `simular_ataque` sin jugar.
+- Decisión: todo el azar pasa por `IDice` (`SeededDice` con `System.Random` y semilla; `FixedDice` en los tests).
+  `Combat.Fight` recibe las dos tiradas como parámetros, así que se pueden recorrer las 9 combinaciones para calcular
+  probabilidades. La secuencia de `System.Random` con semilla puede cambiar entre versiones mayores de .NET;
+  con el SDK fijado basta.
+- Alternativas: `Random` dentro del combate (no se puede probar ni simular); un generador propio (sobra por ahora).

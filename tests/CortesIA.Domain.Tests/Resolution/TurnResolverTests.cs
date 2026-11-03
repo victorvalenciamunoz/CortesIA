@@ -19,7 +19,7 @@ public class TurnResolverTests
     public void Each_simple_action_then_upkeep()
     {
         // 3 soldiers eat 2 grain.
-        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(new Cultivate(), new Recruit(), new Fortify()));
+        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(new Cultivate(), new Recruit(), new Fortify()), new FixedDice());
 
         Assert.Equal((11, 5, 3), Stock(result, CourtId.Player));
         Assert.Equal((7, 3, 5), Stock(result, CourtId.North));
@@ -32,7 +32,7 @@ public class TurnResolverTests
     {
         var state = With(Court(CourtId.Player, gold: 0));
 
-        var result = TurnResolver.Resolve(state, TurnActions(new Cultivate(), new Cultivate(), new Cultivate()));
+        var result = TurnResolver.Resolve(state, TurnActions(new Cultivate(), new Cultivate(), new Cultivate()), new FixedDice());
 
         Assert.Equal((11, 1, 3), Stock(result, CourtId.Player));
         Assert.Equal((11, 5, 3), Stock(result, CourtId.North));
@@ -53,7 +53,7 @@ public class TurnResolverTests
     {
         var deal = new Trade(CourtId.North, Resource.Grain, 3, Resource.Gold, 2);
 
-        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, deal.Mirrored(CourtId.Player), new Cultivate()));
+        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, deal.Mirrored(CourtId.Player), new Cultivate()), new FixedDice());
 
         Assert.Equal((5, 7, 3), Stock(result, CourtId.Player));
         Assert.Equal((11, 3, 3), Stock(result, CourtId.North));
@@ -66,7 +66,7 @@ public class TurnResolverTests
         var deal = new Trade(CourtId.North, Resource.Grain, 3, Resource.Gold, 2);
         var stingy = new Trade(CourtId.Player, Resource.Gold, 1, Resource.Grain, 3);
 
-        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, stingy, new Cultivate()));
+        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, stingy, new Cultivate()), new FixedDice());
 
         Assert.Equal((8, 5, 3), Stock(result, CourtId.Player));
         Assert.Equal((8, 5, 3), Stock(result, CourtId.North));
@@ -79,7 +79,7 @@ public class TurnResolverTests
     {
         var deal = new Trade(CourtId.North, Resource.Grain, 3, Resource.Gold, 2);
 
-        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, new Cultivate(), new Cultivate()));
+        var result = TurnResolver.Resolve(GameState.Start(), TurnActions(deal, new Cultivate(), new Cultivate()), new FixedDice());
 
         Assert.Equal((8, 5, 3), Stock(result, CourtId.Player));
         Assert.DoesNotContain(result.Events, e => e is Traded);
@@ -91,7 +91,7 @@ public class TurnResolverTests
         // 1 grain feeds 2 soldiers.
         var state = With(Court(CourtId.Player, grain: 1, soldiers: 5));
 
-        var result = TurnResolver.Resolve(state, TurnActions(new Fortify(), new Cultivate(), new Cultivate()));
+        var result = TurnResolver.Resolve(state, TurnActions(new Fortify(), new Cultivate(), new Cultivate()), new FixedDice());
 
         Assert.Equal((0, 5, 2), Stock(result, CourtId.Player));
         Assert.Contains(new SoldiersDeserted(1, CourtId.Player, 3), result.Events);
@@ -103,7 +103,7 @@ public class TurnResolverTests
     {
         var state = With(Court(CourtId.Player, grain: 0, soldiers: 1));
 
-        var result = TurnResolver.Resolve(state, TurnActions(new Fortify(), new Cultivate(), new Cultivate()));
+        var result = TurnResolver.Resolve(state, TurnActions(new Fortify(), new Cultivate(), new Cultivate()), new FixedDice());
 
         Assert.True(result.State.Court(CourtId.Player).IsEliminated);
         Assert.Contains(new CourtEliminated(1, CourtId.Player), result.Events);
@@ -115,7 +115,7 @@ public class TurnResolverTests
         var state = With(Court(CourtId.Player, grain: 0, gold: 0, soldiers: 0) with { IsEliminated = true });
         var actions = new Dictionary<CourtId, GameAction> { [CourtId.North] = new Cultivate(), [CourtId.South] = new Cultivate() };
 
-        var result = TurnResolver.Resolve(state, actions);
+        var result = TurnResolver.Resolve(state, actions, new FixedDice());
 
         Assert.Equal((0, 0, 0), Stock(result, CourtId.Player));
         Assert.DoesNotContain(result.Events, e => e is CourtEliminated);
@@ -127,7 +127,7 @@ public class TurnResolverTests
         var state = With(Court(CourtId.Player, gold: 1));
         var missing = new Dictionary<CourtId, GameAction> { [CourtId.North] = new Cultivate(), [CourtId.South] = new Cultivate() };
 
-        Assert.Throws<ArgumentException>(() => TurnResolver.Resolve(state, missing));
-        Assert.Throws<ArgumentException>(() => TurnResolver.Resolve(state, TurnActions(new Recruit(), new Cultivate(), new Cultivate())));
+        Assert.Throws<ArgumentException>(() => TurnResolver.Resolve(state, missing, new FixedDice()));
+        Assert.Throws<ArgumentException>(() => TurnResolver.Resolve(state, TurnActions(new Recruit(), new Cultivate(), new Cultivate()), new FixedDice()));
     }
 }

@@ -17,6 +17,19 @@ public sealed record Traded(int Turn, CourtId Court, Trade Deal) : GameEvent(Tur
 
 public sealed record TradeFailed(int Turn, CourtId Court, Trade Deal, string Reason) : GameEvent(Turn);
 
+/// <summary><paramref name="Winner"/> is null only when a mutual attack ends in a tie.</summary>
+public sealed record Fought(
+    int Turn,
+    CourtId Attacker,
+    CourtId Defender,
+    bool Mutual,
+    bool DefenderFortified,
+    int AttackerForce,
+    int DefenderForce,
+    CourtId? Winner,
+    int StolenGrain,
+    int StolenGold) : GameEvent(Turn);
+
 public sealed record SoldiersDeserted(int Turn, CourtId Court, int Soldiers) : GameEvent(Turn);
 
 public sealed record CourtEliminated(int Turn, CourtId Court) : GameEvent(Turn);

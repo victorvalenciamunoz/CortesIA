@@ -13,13 +13,14 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5.
   cuánto puede dar de cada recurso).
 - `TurnResolver`: aplica las acciones de un turno en el orden de REGLAS.md (producción, comercio, mantenimiento,
   eliminación) y devuelve el estado nuevo y los eventos (`GameEvent`: cultivó, reclutó, comerció, desertaron…).
-  El combate aún no está: un turno con ataques lanza una excepción.
+- `Combat.Fight`: un combate como función pura de las dos cortes y las dos tiradas. `TurnResolver` encadena los
+  combates del turno en orden sorteado con `IDice` (`SeededDice` con semilla). Evento `Fought` con fuerzas, ganador y botín.
 
 ## Qué falta
 - [x] Paso 0: repo, SDK, solución, CI (2026-11-03)
 - [x] Paso 1: estado, inicio, acciones, validación con motivo, jugadas legales (2026-11-03)
 - [x] Paso 2: resolución sin combate (2026-11-03)
-- [ ] Paso 3: combate
+- [x] Paso 3: combate (2026-11-03)
 - [ ] Paso 4: pactos
 - [ ] Paso 5: fin y ganador, crónica con visibilidad, vista por corte
 - [ ] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso
@@ -30,4 +31,7 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5.
 - Paso 1: 20 tests en `ActionValidatorTests` y `LegalActionsTests`. Uno comprueba que todo lo que `LegalActions`
   da por legal pasa `ActionValidator`, para que las dos piezas no se contradigan.
 - Paso 2: 14 tests en `TurnResolverTests` (cada acción, +1 de oro, redondeo del mantenimiento, comercio en espejo
-  y fallido, deserción, eliminación, acciones que faltan o son ilegales). 34 tests en total.
+  y fallido, deserción, eliminación, acciones que faltan o son ilegales).
+- Paso 3: 12 tests en `CombatTests` (botín redondeado, empate al defensor, fortificar, ataque mutuo, soldados no
+  negativos, reclutas que ya defienden, combates encadenados, orden sorteado, misma semilla = misma partida), entre ellos
+  uno que reproduce el turno de ejemplo de la explicación. 46 tests en total.

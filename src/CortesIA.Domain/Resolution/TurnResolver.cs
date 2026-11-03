@@ -10,7 +10,7 @@ public sealed record TurnResult(GameState State, IReadOnlyList<GameEvent> Events
 
 /// <summary>
 /// Applies the actions of one turn in the order fixed in REGLAS.md:
-/// production, trades, (combat), upkeep, (pacts), elimination.
+/// production, trades, combat, upkeep, (pacts), elimination.
 /// Expects one valid action per living court; deciding what to do with invalid ones is the caller's job.
 /// </summary>
 public static class TurnResolver
@@ -18,7 +18,7 @@ public static class TurnResolver
     public const int CultivateGrain = 3;
     public const int RecruitSoldiers = 2;
 
-    public static TurnResult Resolve(GameState state, IReadOnlyDictionary<CourtId, GameAction> actions)
+    public static TurnResult Resolve(GameState state, IReadOnlyDictionary<CourtId, GameAction> actions, IDice dice)
     {
         CheckActions(state, actions);
 
@@ -29,11 +29,7 @@ public static class TurnResolver
 
         Produce(turn, courts, ordered, events);
         ExecuteTrades(turn, courts, ordered, events);
-        if (ordered.Any(pair => pair.Value is Attack))
-        {
-            throw new NotSupportedException("Combat is not implemented yet.");
-        }
-
+        ResolveCombats(turn, courts, ordered, dice, events);
         PayUpkeep(turn, courts, events);
         EliminateStarved(turn, courts, events);
 
@@ -106,6 +102,40 @@ public static class TurnResolver
 
             courts[id] = courts[id].Change(deal.Give, -deal.GiveAmount).Change(deal.Ask, deal.AskAmount);
             events.Add(new Traded(turn, id, deal));
+        }
+    }
+
+    // Fights run one after another, each on the state left by the previous one, in an order drawn with the dice
+    // so that no seat is always first. A pair attacking each other fights once.
+    private static void ResolveCombats(
+        int turn,
+        Dictionary<CourtId, CourtState> courts,
+        List<KeyValuePair<CourtId, GameAction>> actions,
+        IDice dice,
+        List<GameEvent> events)
+    {
+        var attacks = actions.Where(pair => pair.Value is Attack)
+            .Select(pair => (Attacker: pair.Key, Target: ((Attack)pair.Value).Target))
+            .ToList();
+        bool IsMutual((CourtId Attacker, CourtId Target) attack) => attacks.Contains((attack.Target, attack.Attacker));
+        var pending = attacks.Where(attack => !IsMutual(attack) || attack.Attacker < attack.Target).ToList();
+
+        while (pending.Count > 0)
+        {
+            var index = pending.Count == 1 ? 0 : dice.Pick(pending.Count);
+            var (attacker, target) = pending[index];
+            pending.RemoveAt(index);
+
+            var mutual = IsMutual((attacker, target));
+            var fortified = actions.Any(pair => pair.Key == target && pair.Value is Fortify);
+            var attackerRoll = dice.Roll();
+            var defenderRoll = dice.Roll();
+            var outcome = Combat.Fight(courts[attacker], courts[target], fortified, mutual, attackerRoll, defenderRoll);
+
+            courts[attacker] = outcome.Attacker;
+            courts[target] = outcome.Defender;
+            events.Add(new Fought(turn, attacker, target, mutual, fortified, outcome.AttackerForce, outcome.DefenderForce,
+                outcome.Winner, outcome.StolenGrain, outcome.StolenGold));
         }
     }
 
