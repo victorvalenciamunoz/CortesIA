@@ -1,6 +1,6 @@
 # Estado
 
-Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5 (el dominio), lista para revisar.
+Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio) fusionada. PR #2 recoge los pasos 6 a 8.
 
 ## Qué funciona
 - Solución con `CortesIA.Domain` y sus tests (xUnit v3), CI en GitHub Actions.
@@ -30,7 +30,7 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5 (
 - [x] Paso 3: combate (2026-11-03)
 - [x] Paso 4: pactos (2026-11-03)
 - [x] Paso 5: fin y ganador, crónica con visibilidad, vista por corte (2026-11-03)
-- [ ] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso
+- [x] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso (2026-11-03)
 - [ ] Paso 7: evals: 1.000 partidas aleatorio vs codicioso, tabla de victorias
 - [ ] Paso 8: consola jugable (Spectre.Console)
 

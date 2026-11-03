@@ -50,3 +50,22 @@ Formato: contexto → decisión → alternativas descartadas.
   `GameState.Chronicle`. Pasarlo a JSON se hará cuando lo pida el primer uso real (prompts de la Fase 2 o partidas
   guardadas), para diseñar el formato con ese uso delante.
 - Alternativas: dar al jugador el `GameState` entero (filtraría pactos ajenos); serializar ya (formato sin uso que lo guíe).
+
+## 009 — Rivales de referencia
+- Contexto: la Fase 0 necesita dos rivales sin IA contra los que medir después a los modelos.
+- Decisión:
+  - **Aleatorio** (`RandomRival`, con semilla): elige al azar entre las acciones legales (cantidades de 1 a 3),
+    propone un pacto al azar una vez de cada cuatro y acepta la mitad de las propuestas.
+  - **Codicioso** (`GreedyRival`, sin azar). Primera regla que se cumpla: 1) juega el comercio pactado si puede pagarlo;
+    2) cultiva si no tiene grano para dos turnos de mantenimiento; 3) ataca a la corte más rica (grano + oro ≥ 2)
+    a la que saca 2 soldados o más (gana 8 de cada 9) y con la que no tiene no agresión; 4) recluta si no es la más
+    fuerte; 5) cultiva. Nunca propone y nunca rompe pactos. Acepta la no agresión de quien tiene más soldados y un
+    comercio solo si recibe más unidades de las que da.
+- Alternativas: un codicioso con azar o que rompa pactos cuando le compense (más difícil de razonar como referencia).
+
+## 010 — La partida pide las jugadas a la vez
+- Contexto: las acciones son secretas y simultáneas, y con modelos cada decisión puede tardar segundos.
+- Decisión: `Match` pide las acciones de todas las cortes en paralelo, con la misma vista de partida. La diplomacia
+  va en orden fijo porque cada mensaje puede cambiar el estado (un pacto firmado). Los fallos de un jugador quedan
+  en la crónica como `PlayerFaulted`, visibles solo para esa corte.
+- Alternativas: pedirlas una tras otra (igual de correcto, más lento con modelos).
