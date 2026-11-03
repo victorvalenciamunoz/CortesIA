@@ -1,5 +1,6 @@
 using System.Globalization;
 using CortesIA.Console;
+using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
 using CortesIA.Domain.Players;

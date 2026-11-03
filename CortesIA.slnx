@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/CortesIA.Ai/CortesIA.Ai.csproj" />
     <Project Path="src/CortesIA.Console/CortesIA.Console.csproj" />
     <Project Path="src/CortesIA.Domain/CortesIA.Domain.csproj" />
     <Project Path="src/CortesIA.Evals/CortesIA.Evals.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CortesIA.Ai.Tests/CortesIA.Ai.Tests.csproj" />
     <Project Path="tests/CortesIA.Domain.Tests/CortesIA.Domain.Tests.csproj" />
   </Folder>
 </Solution>

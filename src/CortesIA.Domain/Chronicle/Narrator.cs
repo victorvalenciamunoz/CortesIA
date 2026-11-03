@@ -1,9 +1,8 @@
-using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Pacts;
 using CortesIA.Domain.Resolution;
 
-namespace CortesIA.Console;
+namespace CortesIA.Domain.Chronicle;
 
 /// <summary>Turns chronicle events, proposals and pacts into plain Spanish sentences.</summary>
 public static class Narrator
