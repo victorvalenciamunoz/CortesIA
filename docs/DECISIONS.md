@@ -42,3 +42,11 @@ Formato: contexto → decisión → alternativas descartadas.
   probabilidades. La secuencia de `System.Random` con semilla puede cambiar entre versiones mayores de .NET;
   con el SDK fijado basta.
 - Alternativas: `Random` dentro del combate (no se puede probar ni simular); un generador propio (sobra por ahora).
+
+## 008 — La vista de cada corte, sin JSON todavía
+- Contexto: lo que decide un jugador (y luego un modelo) debe salir solo de lo que su corte puede saber.
+- Decisión: `CourtView.For(estado, corte)` reúne su estado, el de las otras (público), sus pactos, la parte visible de
+  la crónica y sus jugadas legales. Cada evento dice quién puede verlo (`IsVisibleTo`). La crónica completa vive en
+  `GameState.Chronicle`. Pasarlo a JSON se hará cuando lo pida el primer uso real (prompts de la Fase 2 o partidas
+  guardadas), para diseñar el formato con ese uso delante.
+- Alternativas: dar al jugador el `GameState` entero (filtraría pactos ajenos); serializar ya (formato sin uso que lo guíe).

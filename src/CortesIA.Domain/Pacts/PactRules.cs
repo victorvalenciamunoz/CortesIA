@@ -49,8 +49,8 @@ public static class PactRules
         };
     }
 
-    /// <summary>Records an accepted proposal. It starts binding in the current turn.</summary>
-    public static (GameState State, PactSigned Event) Sign(GameState state, PactProposal proposal)
+    /// <summary>Records an accepted proposal in the state and the chronicle. It starts binding in the current turn.</summary>
+    public static GameState Sign(GameState state, PactProposal proposal)
     {
         if (Validate(state, proposal) is { IsValid: false } invalid)
         {
@@ -58,6 +58,6 @@ public static class PactRules
         }
 
         var pact = new Pact(proposal.Kind, proposal.From, proposal.To, state.Turn, proposal.Turns, proposal.Terms);
-        return (state with { Pacts = state.Pacts.Add(pact) }, new PactSigned(state.Turn, pact));
+        return state with { Pacts = state.Pacts.Add(pact), Chronicle = state.Chronicle.Add(new PactSigned(state.Turn, pact)) };
     }
 }

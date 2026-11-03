@@ -82,5 +82,6 @@ Huecos de las reglas cerrados para que la resolución sea determinista.
   se anulan sin premio ni castigo y queda última. Si solo queda una viva, la partida termina.
 - Empate también en el desempate: victoria compartida.
 
-**Información.** Los recursos de todas las cortes son públicos. Las acciones se revelan tras resolver. Mensajes y
-pactos solo los ven las partes; combates y rupturas de pacto, todo el mundo.
+**Información.** Los recursos de todas las cortes son públicos. Las acciones y lo que producen (cultivos, reclutas,
+intercambios, combates, deserciones, eliminaciones) los ve todo el mundo tras resolver. Mensajes y pactos solo los ven
+las partes, salvo las rupturas de pacto, que son públicas.

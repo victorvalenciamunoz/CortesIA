@@ -13,7 +13,7 @@ public class PactTests
     private static readonly Trade Terms = new(CourtId.North, Resource.Grain, 2, Resource.Gold, 1);
 
     private static GameState Signed(GameState state, PactKind kind, int turns, Trade? terms = null) =>
-        PactRules.Sign(state, new PactProposal(kind, CourtId.Player, CourtId.North, turns, terms)).State;
+        PactRules.Sign(state, new PactProposal(kind, CourtId.Player, CourtId.North, turns, terms));
 
     private static int Prestige(TurnResult result, CourtId id) => result.State.Court(id).Prestige;
 
@@ -22,11 +22,11 @@ public class PactTests
     {
         var state = GameState.Start() with { Turn = 4 };
 
-        var (signed, signedEvent) = PactRules.Sign(state, new PactProposal(PactKind.NonAggression, CourtId.Player, CourtId.North, 3));
+        var signed = PactRules.Sign(state, new PactProposal(PactKind.NonAggression, CourtId.Player, CourtId.North, 3));
 
         var pact = Assert.Single(signed.Pacts);
         Assert.Equal((4, 6), (pact.StartTurn, pact.EndTurn));
-        Assert.Equal(new PactSigned(4, pact), signedEvent);
+        Assert.Equal(new PactSigned(4, pact), Assert.Single(signed.Chronicle));
     }
 
     [Theory]

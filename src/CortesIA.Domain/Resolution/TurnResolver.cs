@@ -21,6 +21,11 @@ public static class TurnResolver
 
     public static TurnResult Resolve(GameState state, IReadOnlyDictionary<CourtId, GameAction> actions, IDice dice)
     {
+        if (state.IsOver)
+        {
+            throw new InvalidOperationException("The game is over.");
+        }
+
         CheckActions(state, actions);
 
         var turn = state.Turn;
@@ -36,7 +41,14 @@ public static class TurnResolver
         EliminateStarved(turn, courts, events);
         pacts = CancelPactsOfEliminated(turn, pacts, courts, events);
 
-        return new TurnResult(state with { Turn = turn + 1, Courts = courts.ToImmutableDictionary(), Pacts = pacts }, events);
+        var next = state with
+        {
+            Turn = turn + 1,
+            Courts = courts.ToImmutableDictionary(),
+            Pacts = pacts,
+            Chronicle = state.Chronicle.AddRange(events),
+        };
+        return new TurnResult(next, events);
     }
 
     public static int UpkeepCost(int soldiers) => (soldiers + 1) / 2;

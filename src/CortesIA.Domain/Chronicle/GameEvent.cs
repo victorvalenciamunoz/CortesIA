@@ -5,7 +5,11 @@ using CortesIA.Domain.Pacts;
 namespace CortesIA.Domain.Chronicle;
 
 /// <summary>Something that happened in a turn, as data. Text is produced elsewhere.</summary>
-public abstract record GameEvent(int Turn);
+public abstract record GameEvent(int Turn)
+{
+    /// <summary>Most events are public; the details of a pact are only known to its parties.</summary>
+    public virtual bool IsVisibleTo(CourtId court) => true;
+}
 
 public sealed record Cultivated(int Turn, CourtId Court, int Grain, int Gold) : GameEvent(Turn);
 
@@ -31,15 +35,24 @@ public sealed record Fought(
     int StolenGrain,
     int StolenGold) : GameEvent(Turn);
 
-public sealed record PactSigned(int Turn, Pact Pact) : GameEvent(Turn);
+public sealed record PactSigned(int Turn, Pact Pact) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => Pact.Parties.Contains(court);
+}
 
-public sealed record PactFulfilled(int Turn, Pact Pact) : GameEvent(Turn);
+public sealed record PactFulfilled(int Turn, Pact Pact) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => Pact.Parties.Contains(court);
+}
 
 /// <summary>Public: every court learns about it.</summary>
 public sealed record PactBroken(int Turn, Pact Pact, CourtId Breaker) : GameEvent(Turn);
 
 /// <summary>A party was eliminated: no reward and no penalty.</summary>
-public sealed record PactCancelled(int Turn, Pact Pact) : GameEvent(Turn);
+public sealed record PactCancelled(int Turn, Pact Pact) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => Pact.Parties.Contains(court);
+}
 
 public sealed record SoldiersDeserted(int Turn, CourtId Court, int Soldiers) : GameEvent(Turn);
 
