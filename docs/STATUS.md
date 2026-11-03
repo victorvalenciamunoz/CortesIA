@@ -27,6 +27,33 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
   responden en el momento) y acciones pedidas a la vez. Si un jugador falla, tarda demasiado o propone algo ilegal,
   se juega Cultivar y queda un `PlayerFaulted` con el motivo.
 - Rivales: `RandomRival` (al azar entre lo legal) y `GreedyRival` (regla fija, ver DECISIONS 009).
+- `CortesIA.Evals`: torneo de referencia (`dotnet run --project src/CortesIA.Evals -- [partidas] [semilla]`). Rota
+  los asientos, comprueba tras cada turno que ningún recurso sea negativo y saca las tablas en Markdown con el margen
+  de error al 95 %. Devuelve error si hay fallos, y el CI lo ejecuta en cada PR.
+
+## Juez de la Fase 0: torneo de referencia (1.000 partidas, semilla 1)
+
+| Partidas | Errores | Recursos negativos | Fallos de jugador | Acabadas antes del turno 15 | Turnos de media |
+|---|---|---|---|---|---|
+| 1000 | 0 | 0 | 0 | 48 | 14,7 |
+
+| Alineación | Estrategia | Cortes jugadas | Victorias en solitario | Compartidas | Cuota de victoria (margen 95 %) | Prestigio medio | Eliminada |
+|---|---|---|---|---|---|---|---|
+| 1 codicioso + 2 aleatorios | codicioso | 501 | 484 | 1 | 96,7 % ± 1,6 | 8,1 | 0,0 % |
+| 1 codicioso + 2 aleatorios | aleatorio | 1002 | 16 | 1 | 1,6 % ± 0,8 | -1,3 | 35,4 % |
+| 2 codiciosos + 1 aleatorio | codicioso | 998 | 463 | 66 | 49,7 % ± 3,1 | 8,1 | 0,1 % |
+| 2 codiciosos + 1 aleatorio | aleatorio | 499 | 3 | 0 | 0,6 % ± 0,7 | -1,3 | 20,4 % |
+
+Cuota de victoria del codicioso por asiento: Jugador 68,6 % ± 4,1 · Norte 60,5 % ± 4,3 · Sur 67,1 % ± 4,1.
+
+Lectura:
+- El codicioso gana casi siempre al aleatorio (97 %). Es la vara de medir de la IA: un modelo que no le gane
+  no aporta nada frente a cinco reglas escritas a mano.
+- El aleatorio acaba con prestigio negativo: rompe pactos al azar y paga −3 cada vez.
+- **Lo de Norte era ruido.** Con 1.000 partidas parecía que el codicioso ganaba 8 puntos menos en Norte. Repetido con
+  6.000 partidas y dos semillas (1 y 777), las diferencias entre asientos quedan en 1-2 puntos, salvo un 46 % frente
+  a 53 % que con la otra semilla bajó a 49 % frente a 51 %. Por eso las tablas llevan ahora el margen de error.
+  Para la Fase 8: no comparar dos números sin su margen.
 
 ## Qué falta
 - [x] Paso 0: repo, SDK, solución, CI (2026-11-03)
@@ -36,7 +63,7 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
 - [x] Paso 4: pactos (2026-11-03)
 - [x] Paso 5: fin y ganador, crónica con visibilidad, vista por corte (2026-11-03)
 - [x] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso (2026-11-03)
-- [ ] Paso 7: evals: 1.000 partidas aleatorio vs codicioso, tabla de victorias
+- [x] Paso 7: evals: 1.000 partidas aleatorio vs codicioso, tabla de victorias (2026-11-03)
 - [ ] Paso 8: consola jugable (Spectre.Console)
 
 ## Cómo se validó
@@ -54,3 +81,4 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
 - Paso 6: 11 tests en `MatchTests` (fallo, tiempo agotado, jugada ilegal, propuestas aceptadas, rechazadas,
   inválidas y en nombre ajeno, límite de mensajes, y 50 partidas completas aleatorio y codicioso sin ningún fallo
   y repetibles con la misma semilla) y 11 en `GreedyRivalTests`. 92 tests en total.
+- Paso 7: el propio torneo (tablas de arriba), que el CI ejecuta en cada PR.
