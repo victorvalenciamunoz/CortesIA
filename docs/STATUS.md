@@ -13,11 +13,17 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - `docs/conceptos/ejemplos/01-con-ichatclient.cs`: la misma llamada con `IChatClient` (Microsoft.Extensions.AI.OpenAI
   10.11.0, ver DECISIONS 012). Mensajes y opciones como objetos (`ChatMessage`, `ChatOptions`) y respuesta ya leída
   (`response.Text`, `FinishReason`, `Usage`). Mismo texto y mismos tokens que a mano.
+- `docs/conceptos/ejemplos/01-registro.cs`: un intermediario (middleware) que envuelve al cliente y apunta cada llamada
+  sin tocar el código que llama. Uno escrito a mano (`RecordingChatClient`: modelo, tokens, tiempo, bien o falló) y
+  el de la librería (`UseOpenTelemetry`, Microsoft.Extensions.AI 10.11.0), que deja una traza con nombres estándar
+  (`gen_ai.usage.input_tokens`, `gen_ai.input.messages`…). Se encadenan con `AsBuilder().Use(...).Build()`.
 
 ## Qué falta
 - [x] Paso 1: llamada a mano, sin paquetes (2026-11-03)
 - [x] Paso 2: la misma llamada con `IChatClient`, y comparar (2026-11-03)
-- [ ] Paso 3: registro de cada llamada (modelo, tokens, tiempo, resultado); temperatura y streaming
+- [x] Paso 3a: registro de cada llamada, a mano (`DelegatingChatClient`) y con `UseOpenTelemetry` (2026-11-03)
+- [ ] Paso 3b: temperatura (por qué no cambia nada) y streaming
+- [ ] Paso 3c: panel de telemetría para ver cada prompt y respuesta
 - [ ] Paso 4: el cronista narra cada turno en la consola, con las frases fijas si el modelo falla o tarda
 - [ ] Paso 5: proveedor en la nube por configuración, con límite de llamadas (el proveedor lo elige el autor)
 - [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
@@ -33,6 +39,8 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   intenta 4 veces con esperas crecientes y tarda unos 8 s más en rendirse que la versión a mano. El error llega como
   `AggregateException` con un fallo por intento. Con el modelo sin cargar no reintenta: error HTTP 400 al momento.
   Para el cronista habrá que fijar un tiempo máximo propio.
+- Al leer la traza de OpenTelemetry, `activity.Tags` no trae los tokens: solo da los datos de texto. Hay que usar
+  `TagObjects`. Un error mío, pero fácil de cometer.
 - El puerto es fijo (54311) porque está puesto en la configuración de Foundry (`foundry config show`).
 - Un texto con acentos pasado a `curl` desde Git Bash llega mal codificado y el servidor lo rechaza; desde C# va bien.
 
@@ -42,3 +50,5 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Paso 2: el ejemplo con `IChatClient` contra Foundry Local (mismo texto y tokens que a mano), contra un puerto sin
   servidor (4 intentos, 11 s frente a 3 s a mano, contando el arranque del programa) y con el modelo descargado
   (HTTP 400 al momento, las dos versiones).
+- Paso 3a: el ejemplo de registro con el servidor encendido (los dos registros coinciden: 68 + 59 tokens, 2,8 s) y
+  apagado (los dos apuntan el fallo con sus 8 s de reintentos).
