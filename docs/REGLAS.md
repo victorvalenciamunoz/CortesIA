@@ -61,6 +61,7 @@ Huecos de las reglas cerrados para que la resolución sea determinista.
   tú das 2 oro y pides 3 grano). Gasta la acción de ambas; la diplomacia solo sirve para ponerse de acuerdo.
 - Solo grano y oro, cantidades de 1 o más, un recurso distinto en cada lado.
 - Si al ejecutarse falta el recurso, no se hace y queda registrado.
+- Un intercambio puntual se acuerda como un pacto de comercio recurrente de 1 turno.
 
 **Mantenimiento.**
 - Grano consumido = soldados / 2 redondeado hacia arriba (3 soldados comen 2).

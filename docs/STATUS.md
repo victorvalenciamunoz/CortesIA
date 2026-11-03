@@ -22,6 +22,11 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
   con desempate y victoria compartida).
 - `GameState.Chronicle` guarda todos los eventos; cada uno sabe quién puede verlo. `CourtView.For` da lo que una
   corte puede saber: su estado, el de las otras, sus pactos, su parte de la crónica y sus jugadas legales.
+- `ICourtPlayer`: quien decide por una corte (mensajes, respuesta a propuestas, acción), viendo solo su `CourtView`.
+  `Match` juega la partida: diplomacia en orden (máximo 2 mensajes por corte y turno; las propuestas se validan y se
+  responden en el momento) y acciones pedidas a la vez. Si un jugador falla, tarda demasiado o propone algo ilegal,
+  se juega Cultivar y queda un `PlayerFaulted` con el motivo.
+- Rivales: `RandomRival` (al azar entre lo legal) y `GreedyRival` (regla fija, ver DECISIONS 009).
 
 ## Qué falta
 - [x] Paso 0: repo, SDK, solución, CI (2026-11-03)
@@ -45,4 +50,7 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 (pasos 0 a 5, el dominio
 - Paso 4: 15 tests en `PactTests` (propuestas inválidas con motivo, duración, uno por tipo y pareja, cumplir,
   romper atacando o sin comerciar, ataque mutuo, atacar a un tercero, anulación por eliminación).
 - Paso 5: 9 tests en `EndAndViewTests` (fin tras el turno 15 y con una corte viva, ganador, desempate, empate total,
-  eliminada última, crónica acumulada, lo que ve cada corte de los pactos ajenos). 70 tests en total.
+  eliminada última, crónica acumulada, lo que ve cada corte de los pactos ajenos).
+- Paso 6: 11 tests en `MatchTests` (fallo, tiempo agotado, jugada ilegal, propuestas aceptadas, rechazadas,
+  inválidas y en nombre ajeno, límite de mensajes, y 50 partidas completas aleatorio y codicioso sin ningún fallo
+  y repetibles con la misma semilla) y 11 en `GreedyRivalTests`. 92 tests en total.
