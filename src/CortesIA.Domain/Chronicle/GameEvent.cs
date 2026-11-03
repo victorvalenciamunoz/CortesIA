@@ -35,6 +35,23 @@ public sealed record Fought(
     int StolenGrain,
     int StolenGold) : GameEvent(Turn);
 
+public sealed record MessageSent(int Turn, CourtId From, CourtId To, string Text, PactProposal? Proposal) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => court == From || court == To;
+}
+
+/// <summary><paramref name="Reason"/> is set when the proposal was invalid; null when the other court said no.</summary>
+public sealed record ProposalRejected(int Turn, PactProposal Proposal, string? Reason) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => court == Proposal.From || court == Proposal.To;
+}
+
+/// <summary>A player failed, took too long or broke a rule, and the match stepped in. Only that court is told.</summary>
+public sealed record PlayerFaulted(int Turn, CourtId Court, string Reason) : GameEvent(Turn)
+{
+    public override bool IsVisibleTo(CourtId court) => court == Court;
+}
+
 public sealed record PactSigned(int Turn, Pact Pact) : GameEvent(Turn)
 {
     public override bool IsVisibleTo(CourtId court) => Pact.Parties.Contains(court);
