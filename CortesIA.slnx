@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/CortesIA.Console/CortesIA.Console.csproj" />
     <Project Path="src/CortesIA.Domain/CortesIA.Domain.csproj" />
     <Project Path="src/CortesIA.Evals/CortesIA.Evals.csproj" />
   </Folder>
