@@ -3,6 +3,7 @@ using CortesIA.Domain.Actions;
 using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
+using CortesIA.Domain.Pacts;
 
 namespace CortesIA.Domain.Resolution;
 
@@ -10,7 +11,7 @@ public sealed record TurnResult(GameState State, IReadOnlyList<GameEvent> Events
 
 /// <summary>
 /// Applies the actions of one turn in the order fixed in REGLAS.md:
-/// production, trades, combat, upkeep, (pacts), elimination.
+/// production, trades, combat, upkeep, pacts, elimination.
 /// Expects one valid action per living court; deciding what to do with invalid ones is the caller's job.
 /// </summary>
 public static class TurnResolver
@@ -31,9 +32,11 @@ public static class TurnResolver
         ExecuteTrades(turn, courts, ordered, events);
         ResolveCombats(turn, courts, ordered, dice, events);
         PayUpkeep(turn, courts, events);
+        var pacts = CheckPacts(turn, state.Pacts, courts, actions, events);
         EliminateStarved(turn, courts, events);
+        pacts = CancelPactsOfEliminated(turn, pacts, courts, events);
 
-        return new TurnResult(state with { Turn = turn + 1, Courts = courts.ToImmutableDictionary() }, events);
+        return new TurnResult(state with { Turn = turn + 1, Courts = courts.ToImmutableDictionary(), Pacts = pacts }, events);
     }
 
     public static int UpkeepCost(int soldiers) => (soldiers + 1) / 2;
@@ -155,6 +158,62 @@ public static class TurnResolver
             courts[court.Id] = court with { Soldiers = fed, Grain = 0 };
             events.Add(new SoldiersDeserted(turn, court.Id, court.Soldiers - fed));
         }
+    }
+
+    // Breaking is judged by what a court chose to do, not by how it turned out: attacking a non-aggression partner
+    // breaks the pact even if the attack fails, and not playing the agreed trade breaks a recurring one.
+    private static ImmutableList<Pact> CheckPacts(
+        int turn,
+        ImmutableList<Pact> pacts,
+        Dictionary<CourtId, CourtState> courts,
+        IReadOnlyDictionary<CourtId, GameAction> actions,
+        List<GameEvent> events)
+    {
+        var kept = new List<Pact>();
+        foreach (var pact in pacts)
+        {
+            var breakers = pact.Parties.Where(party => Breaks(pact, party, actions.GetValueOrDefault(party))).ToList();
+            foreach (var breaker in breakers)
+            {
+                courts[breaker] = courts[breaker] with { Prestige = courts[breaker].Prestige - Pact.BreakPenalty };
+                events.Add(new PactBroken(turn, pact, breaker));
+            }
+
+            if (breakers.Count > 0)
+            {
+                continue;
+            }
+
+            if (turn < pact.EndTurn)
+            {
+                kept.Add(pact);
+                continue;
+            }
+
+            foreach (var party in pact.Parties)
+            {
+                courts[party] = courts[party] with { Prestige = courts[party].Prestige + Pact.FulfilReward };
+            }
+
+            events.Add(new PactFulfilled(turn, pact));
+        }
+
+        return [.. kept];
+    }
+
+    private static bool Breaks(Pact pact, CourtId party, GameAction? action) => pact.Kind switch
+    {
+        PactKind.NonAggression => action is Attack attack && attack.Target == pact.Other(party),
+        PactKind.RecurringTrade => action != pact.RequiredTrade(party),
+        _ => throw new ArgumentOutOfRangeException(nameof(pact), pact.Kind, null),
+    };
+
+    private static ImmutableList<Pact> CancelPactsOfEliminated(
+        int turn, ImmutableList<Pact> pacts, Dictionary<CourtId, CourtState> courts, List<GameEvent> events)
+    {
+        var cancelled = pacts.Where(pact => pact.Parties.Any(party => courts[party].IsEliminated)).ToList();
+        events.AddRange(cancelled.Select(pact => new PactCancelled(turn, pact)));
+        return pacts.RemoveRange(cancelled);
     }
 
     private static void EliminateStarved(int turn, Dictionary<CourtId, CourtState> courts, List<GameEvent> events)

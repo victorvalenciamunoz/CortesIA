@@ -15,13 +15,16 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5.
   eliminación) y devuelve el estado nuevo y los eventos (`GameEvent`: cultivó, reclutó, comerció, desertaron…).
 - `Combat.Fight`: un combate como función pura de las dos cortes y las dos tiradas. `TurnResolver` encadena los
   combates del turno en orden sorteado con `IDice` (`SeededDice` con semilla). Evento `Fought` con fuerzas, ganador y botín.
+- Pactos: `PactRules` valida una `PactProposal` (con motivo) y la firma como `Pact`, que queda en `GameState.Pacts`.
+  `TurnResolver` comprueba cada turno si se rompe (−3, evento público `PactBroken`), se cumple (+1 a cada parte,
+  `PactFulfilled`) o se anula por eliminación (`PactCancelled`).
 
 ## Qué falta
 - [x] Paso 0: repo, SDK, solución, CI (2026-11-03)
 - [x] Paso 1: estado, inicio, acciones, validación con motivo, jugadas legales (2026-11-03)
 - [x] Paso 2: resolución sin combate (2026-11-03)
 - [x] Paso 3: combate (2026-11-03)
-- [ ] Paso 4: pactos
+- [x] Paso 4: pactos (2026-11-03)
 - [ ] Paso 5: fin y ganador, crónica con visibilidad, vista por corte
 - [ ] Paso 6: interfaz de jugador, partida con jugada por defecto, rivales aleatorio y codicioso
 - [ ] Paso 7: evals: 1.000 partidas aleatorio vs codicioso, tabla de victorias
@@ -34,4 +37,6 @@ Fase actual: 0 — el juego sin IA (ver PLAN.md). PR #1 recoge los pasos 0 a 5.
   y fallido, deserción, eliminación, acciones que faltan o son ilegales).
 - Paso 3: 12 tests en `CombatTests` (botín redondeado, empate al defensor, fortificar, ataque mutuo, soldados no
   negativos, reclutas que ya defienden, combates encadenados, orden sorteado, misma semilla = misma partida), entre ellos
-  uno que reproduce el turno de ejemplo de la explicación. 46 tests en total.
+  uno que reproduce el turno de ejemplo de la explicación.
+- Paso 4: 15 tests en `PactTests` (propuestas inválidas con motivo, duración, uno por tipo y pareja, cumplir,
+  romper atacando o sin comerciar, ataque mutuo, atacar a un tercero, anulación por eliminación). 61 tests en total.

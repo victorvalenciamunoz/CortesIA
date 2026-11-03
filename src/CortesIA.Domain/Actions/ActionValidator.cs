@@ -38,6 +38,19 @@ public static class ActionValidator
         };
     }
 
+    /// <summary>The shape of a trade, regardless of who can pay it.</summary>
+    public static ValidationResult ValidateTerms(Trade trade)
+    {
+        if (trade.Give == trade.Ask)
+        {
+            return ValidationResult.Invalid("Hay que dar un recurso y pedir otro distinto.");
+        }
+
+        return trade.GiveAmount >= 1 && trade.AskAmount >= 1
+            ? ValidationResult.Valid
+            : ValidationResult.Invalid("Las cantidades del intercambio deben ser al menos 1.");
+    }
+
     private static ValidationResult ValidateAttack(GameState state, CourtState self, Attack attack)
     {
         if (attack.Target == self.Id)
@@ -67,14 +80,9 @@ public static class ActionValidator
             return ValidationResult.Invalid($"{trade.Partner.Spanish()} está eliminada y no puede comerciar.");
         }
 
-        if (trade.Give == trade.Ask)
+        if (ValidateTerms(trade) is { IsValid: false } badTerms)
         {
-            return ValidationResult.Invalid("Hay que dar un recurso y pedir otro distinto.");
-        }
-
-        if (trade.GiveAmount < 1 || trade.AskAmount < 1)
-        {
-            return ValidationResult.Invalid("Las cantidades del intercambio deben ser al menos 1.");
+            return badTerms;
         }
 
         var available = self.Amount(trade.Give);

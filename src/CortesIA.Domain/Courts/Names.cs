@@ -1,3 +1,5 @@
+using CortesIA.Domain.Pacts;
+
 namespace CortesIA.Domain.Courts;
 
 /// <summary>Spanish names for player-facing text.</summary>
@@ -16,5 +18,12 @@ public static class Names
         Resource.Grain => "grano",
         Resource.Gold => "oro",
         _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null),
+    };
+
+    public static string Spanish(this PactKind kind) => kind switch
+    {
+        PactKind.NonAggression => "no agresión",
+        PactKind.RecurringTrade => "comercio recurrente",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 }

@@ -74,6 +74,7 @@ Huecos de las reglas cerrados para que la resolución sea determinista.
 - Atacar con no agresión: el ataque se hace; quien lo rompe pierde 3, el pacto se anula y se entera todo el mundo.
 - Comercio recurrente: cada turno ambas partes juegan el Comerciar acordado. Quien no lo juega o no puede pagar lo rompe
   (si fallan los dos, lo rompen los dos).
+- Un pacto se rompe por lo que se elige, no por cómo sale: atacar al socio lo rompe aunque el ataque fracase.
 - Como mucho un pacto de cada tipo por pareja a la vez. El prestigio puede ser negativo.
 
 **Fin.**

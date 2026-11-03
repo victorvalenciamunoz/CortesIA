@@ -1,5 +1,6 @@
 using CortesIA.Domain.Actions;
 using CortesIA.Domain.Courts;
+using CortesIA.Domain.Pacts;
 
 namespace CortesIA.Domain.Chronicle;
 
@@ -29,6 +30,16 @@ public sealed record Fought(
     CourtId? Winner,
     int StolenGrain,
     int StolenGold) : GameEvent(Turn);
+
+public sealed record PactSigned(int Turn, Pact Pact) : GameEvent(Turn);
+
+public sealed record PactFulfilled(int Turn, Pact Pact) : GameEvent(Turn);
+
+/// <summary>Public: every court learns about it.</summary>
+public sealed record PactBroken(int Turn, Pact Pact, CourtId Breaker) : GameEvent(Turn);
+
+/// <summary>A party was eliminated: no reward and no penalty.</summary>
+public sealed record PactCancelled(int Turn, Pact Pact) : GameEvent(Turn);
 
 public sealed record SoldiersDeserted(int Turn, CourtId Court, int Soldiers) : GameEvent(Turn);
 
