@@ -34,11 +34,15 @@ var match = new Match(players, new SeededDice(seed));
 
 // Every call to the model goes to a JSON-lines file and, if the Aspire dashboard is running, to the dashboard.
 // If it is not running, the exporters drop the data silently.
-var log = new CallLog(Path.Combine("registros", $"llamadas-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.jsonl"));
+var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+var calls = new JsonLinesLog(Path.Combine("registros", $"llamadas-{stamp}.jsonl"));
+var narrations = new JsonLinesLog(Path.Combine("registros", $"cronica-{stamp}.jsonl"));
 var service = ResourceBuilder.CreateDefault().AddService("CortesIA.Console");
 using var traces = Sdk.CreateTracerProviderBuilder().SetResourceBuilder(service).AddSource(LocalModel.TelemetrySource).AddOtlpExporter().Build();
 using var metrics = Sdk.CreateMeterProviderBuilder().SetResourceBuilder(service).AddMeter(LocalModel.TelemetrySource).AddOtlpExporter().Build();
-var chronicler = withChronicler ? new Chronicler(LocalModel.Create(LocalModelSettings.Default, log.Append)) : null;
+var chronicler = withChronicler
+    ? new Chronicler(LocalModel.Create(LocalModelSettings.Default, calls.Append), record: narrations.Append<NarrationRecord>)
+    : null;
 
 console.Write(new Rule("[bold]CortesIA[/]"));
 console.MarkupLine(watch
@@ -47,7 +51,7 @@ console.MarkupLine(watch
 console.MarkupLine($"[grey]Semilla {seed}. Para repetir la partida: dotnet run --project src/CortesIA.Console -- {seed}{(watch ? " " + WatchFlag : "")}[/]");
 console.MarkupLine(chronicler is null
     ? "[grey]Sin cronista.[/]"
-    : $"[grey]Cronista: {LocalModelSettings.Default.Model} en {LocalModelSettings.Default.Endpoint}. Llamadas en {Markup.Escape(log.Path)}.[/]");
+    : $"[grey]Cronista: {LocalModelSettings.Default.Model} en {LocalModelSettings.Default.Endpoint}. Registro en {Markup.Escape(Path.GetDirectoryName(calls.Path)!)}/.[/]");
 Screen.ShowIntro(console);
 if (!watch)
 {

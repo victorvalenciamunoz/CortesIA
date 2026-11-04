@@ -28,10 +28,14 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
     solo las que puede ver la corte que lee, con el prompt de `chronicler.prompt.md`. Límite de 20 s. Nunca lanza
     excepciones: devuelve una `Narration` con el texto o con el motivo del fallo.
   - `LocalModel.Create`: el cliente de Foundry Local sin reintentos, con `RecordingChatClient` (cada llamada como
-    `CallRecord`) y `UseOpenTelemetry`. `CallLog` guarda cada llamada como una línea JSON en un fichero.
+    `CallRecord`) y `UseOpenTelemetry`. `JsonLinesLog` guarda cada llamada como una línea JSON en un fichero.
 - La consola narra cada turno: tras los hechos, "El cronista escribe…" y un recuadro "Crónica" con el texto del
   modelo, o una línea gris con el motivo si no responde. Las llamadas quedan en `registros/llamadas-*.jsonl` (fuera
   de git) y, si el panel de Aspire está abierto, en el panel. `--sin-cronista` lo desactiva.
+- **La IA propone, el código dispone:** `NarrationCheck` revisa cada crónica antes de enseñarla y la descarta si
+  trae formato (negritas, listas, títulos) o cifras que no están en los hechos. La consola dice "Sin crónica:" y el
+  motivo. Cada narración (hechos, texto, lo descartado y por qué) queda en `registros/cronica-*.jsonl`.
+- Prompt del cronista, versión 2: con un ejemplo de lista y de crónica buena (ver la comparación abajo).
 
 ## Qué falta
 - [x] Paso 1: llamada a mano, sin paquetes (2026-11-03)
@@ -41,6 +45,7 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - [x] Paso 3c: panel de telemetría para ver cada prompt y respuesta (2026-11-03)
 - [x] Paso 4a: el cronista (`CortesIA.Ai`) con sus tests, y `Narrator` al dominio (2026-11-03)
 - [x] Paso 4b: el cronista narra cada turno en la consola; si falla o tarda, quedan los hechos (2026-11-04)
+- [x] Paso 4c: revisión de la crónica en código y prompt con ejemplo, medido antes y después (2026-11-04)
 - [ ] Paso 5: proveedor en la nube por configuración, con límite de llamadas (el proveedor lo elige el autor)
 - [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
 
@@ -84,6 +89,23 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   - **Formato:** dos turnos salen con negritas y títulos de Markdown (`**Turno 3:**`), que la consola enseña tal
     cual, aunque el prompt pide "no uses listas ni títulos".
   - **Inventa:** un turno cuenta un "empate" que no hubo; otro habla de "aliados" y de "especulación entre los tres".
+- **Prompt sin ejemplo frente a prompt con ejemplo** (mismas 2 partidas, semillas 7 y 11, 30 turnos cada uno):
+
+  | | v1 (solo reglas) | v2 (reglas + un ejemplo) |
+  |---|---|---|
+  | Crónicas que pasan la revisión | 17 de 30 | 30 de 30 |
+  | Descartadas por formato | 11 | 0 |
+  | Descartadas por cifras inventadas | 2 | 0 |
+  | Copian los hechos ("El intercambio de…") | 7 | 1 |
+  | Tiempo medio | 9,7 s | 9,3 s |
+  | Tokens de entrada de media | 221 | 398 |
+
+  - Un ejemplo vale más que las prohibiciones: "no uses listas ni títulos" no bastaba; enseñar una crónica buena sí.
+  - **El modelo copia el ejemplo:** las 30 crónicas de v2 empiezan por "Mientras", como la del ejemplo.
+  - **Pasar la revisión no es estar bien:** "Jugador no se movió" en un turno en que reclutó, o "Sur aumentó su
+    oro y su prestigio con +3 y +1", pasan porque no traen cifras nuevas. La revisión pilla el formato y los
+    números, no los hechos falsos.
+  - El ejemplo casi duplica los tokens de entrada (de 221 a 398), sin que se note en el tiempo.
 - **Tras reiniciar el ordenador, Foundry Local no está arrancado:** la primera partida del día salió sin crónica
   ("denegó expresamente dicha conexión") y siguió con los hechos. Se arranca con `foundry server start` y
   `foundry model load qwen2.5-1.5b`.
@@ -111,3 +133,6 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Paso 4b: una partida entera en modo mirar con Foundry apagado (cada turno avisa y sigue) y otra con el modelo
   cargado (15 narraciones, todas apuntadas en `registros/`); `--sin-cronista` no llama al modelo. El CI juega en
   modo mirar sin modelo, así que comprueba el camino del fallo.
+- Paso 4c: 9 tests nuevos (`NarrationCheckTests`, con respuestas reales del modelo como casos, y dos en
+  `ChroniclerTests`: crónica descartada y registro de cada narración). 131 tests en total. La comparación de prompts,
+  con un guion fuera del repo que juega las mismas dos partidas con cada versión.
