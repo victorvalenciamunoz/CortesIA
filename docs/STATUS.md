@@ -27,8 +27,10 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   - `Chronicler`: pide al modelo que cuente un turno. Le pasa las frases fijas de `Narrator` (ahora en el dominio),
     solo las que puede ver la corte que lee, con el prompt de `chronicler.prompt.md`. Límite de 20 s. Nunca lanza
     excepciones: devuelve una `Narration` con el texto o con el motivo del fallo.
-  - `LocalModel.Create`: el cliente de Foundry Local sin reintentos, con `RecordingChatClient` (cada llamada como
-    `CallRecord`) y `UseOpenTelemetry`. `JsonLinesLog` guarda cada llamada como una línea JSON en un fichero.
+  - `ChatModels.Create(ModelSettings)`: el `IChatClient` del proveedor elegido (Foundry Local, OpenAI o Claude) sin
+    reintentos, con `RecordingChatClient` (cada llamada como `CallRecord`), `CallBudgetChatClient` (límite de
+    llamadas en los de pago), opciones por proveedor (tokens de salida, razonamiento bajo en la nube) y
+    `UseOpenTelemetry`. `JsonLinesLog` guarda cada llamada como una línea JSON en un fichero.
 - La consola narra cada turno: tras los hechos, "El cronista escribe…" y un recuadro "Crónica" con el texto del
   modelo, o una línea gris con el motivo si no responde. Las llamadas quedan en `registros/llamadas-*.jsonl` (fuera
   de git) y, si el panel de Aspire está abierto, en el panel. `--sin-cronista` lo desactiva.
@@ -36,6 +38,11 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
   trae formato (negritas, listas, títulos) o cifras que no están en los hechos. La consola dice "Sin crónica:" y el
   motivo. Cada narración (hechos, texto, lo descartado y por qué) queda en `registros/cronica-*.jsonl`.
 - Prompt del cronista, versión 2: con un ejemplo de lista y de crónica buena (ver la comparación abajo).
+- **Modelos en la nube** (ver DECISIONS 016): `--cronista=openai` (gpt-5.6-luna, el mismo adaptador de OpenAI que
+  Foundry) o `--cronista=claude` (Claude Sonnet 5.5, con la librería oficial `Anthropic`). Modelo, dirección, límites
+  y precios en `src/CortesIA.Console/appsettings.json`; las claves en user-secrets (`Cronista:OpenAI:ApiKey`,
+  `Cronista:Claude:ApiKey`). Máximo 30 llamadas por partida. Al acabar, llamadas, tokens y coste estimado en
+  pantalla y en `registros/partidas.jsonl`. Sin clave, la consola dice cómo guardarla y juega sin cronista.
 
 ## Qué falta
 - [x] Paso 1: llamada a mano, sin paquetes (2026-11-03)
@@ -46,7 +53,7 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - [x] Paso 4a: el cronista (`CortesIA.Ai`) con sus tests, y `Narrator` al dominio (2026-11-03)
 - [x] Paso 4b: el cronista narra cada turno en la consola; si falla o tarda, quedan los hechos (2026-11-04)
 - [x] Paso 4c: revisión de la crónica en código y prompt con ejemplo, medido antes y después (2026-11-04)
-- [ ] Paso 5: proveedor en la nube por configuración, con límite de llamadas (el proveedor lo elige el autor)
+- [x] Paso 5: OpenAI y Claude por configuración, con límite de llamadas y coste estimado (2026-11-04)
 - [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
 
 ## Fallos y sorpresas (para la página de conceptos)
@@ -106,6 +113,17 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
     oro y su prestigio con +3 y +1", pasan porque no traen cifras nuevas. La revisión pilla el formato y los
     números, no los hechos falsos.
   - El ejemplo casi duplica los tokens de entrada (de 221 a 398), sin que se note en el tiempo.
+- **Primera llamada a cada modelo de la nube** (el mismo turno: un ataque ganado y un cultivo):
+
+  | | Tiempo | Tokens (entrada + salida) | Coste |
+  |---|---|---|---|
+  | gpt-5.6-luna | 3,1 s | 339 + 60 | 0,00014 $ |
+  | Claude Sonnet 5.5 | 2,5 s | 544 + 134 | 0,0024 $ |
+
+  - Las dos crónicas son correctas, sin cifras inventadas ni el "Mientras" copiado del ejemplo.
+  - **Los tokens no se comparan entre proveedores:** con el mismo prompt, Claude cuenta 544 de entrada y OpenAI 339.
+    Cada uno trocea el texto a su manera.
+  - Claude escribe las cifras con letras ("cinco contra tres"); la revisión de cifras no las mira.
 - **Tras reiniciar el ordenador, Foundry Local no está arrancado:** la primera partida del día salió sin crónica
   ("denegó expresamente dicha conexión") y siguió con los hechos. Se arranca con `foundry server start` y
   `foundry model load qwen2.5-1.5b`.
@@ -136,3 +154,6 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Paso 4c: 9 tests nuevos (`NarrationCheckTests`, con respuestas reales del modelo como casos, y dos en
   `ChroniclerTests`: crónica descartada y registro de cada narración). 131 tests en total. La comparación de prompts,
   con un guion fuera del repo que juega las mismas dos partidas con cada versión.
+- Paso 5: 2 tests nuevos (límite de llamadas y coste estimado), 133 en total. Una partida entera con el modelo local
+  tras el cambio (15 de 15 crónicas, 7,4 s de media). Sin clave, la consola avisa y juega sin cronista. Las claves,
+  comprobadas sin verlas: nombre y comienzo (`sk-pro…`, `sk-ant…`) y una llamada a cada modelo.

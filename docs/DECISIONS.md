@@ -129,3 +129,20 @@ Formato: contexto → decisión → alternativas descartadas.
   - El prompt lleva un ejemplo de lista y de crónica: en la comparación pasó de 17 a 30 crónicas válidas de 30.
 - Alternativas: quitar el Markdown en la consola (escondería el fallo sin arreglar las cifras); dejar que el modelo
   se corrija pidiéndole otra vez (otra llamada de unos 9 s por turno); un modelo mayor (se verá en los pasos 5 y 6).
+
+## 016 — Modelos en la nube: OpenAI y Claude por configuración
+- Contexto: el paso 5 pide un proveedor en la nube activado solo por configuración, con límite y coste registrado.
+  El autor eligió los dos que ya usa: OpenAI (gpt-5.6-luna) y Claude (Sonnet 5.5), con 30 llamadas por partida.
+- Decisión:
+  - `ModelSettings` describe el modelo (proveedor, nombre, dirección, clave, límite, tokens de salida, precios) y
+    `ChatModels.Create` devuelve un `IChatClient`: el cronista no sabe qué proveedor hay detrás.
+  - OpenAI usa el mismo adaptador que Foundry Local; Claude, la librería oficial `Anthropic` 13.4.0 (Apache-2.0),
+    que trae su propio `IChatClient`. Ambos sin reintentos.
+  - Configuración en `appsettings.json` (sin secretos) y claves en user-secrets, con
+    `Microsoft.Extensions.Configuration.UserSecrets` 10.0.14 (MIT).
+  - Los modelos de la nube razonan antes de contestar y ese razonamiento cuenta como salida: razonamiento bajo y
+    2.000 tokens de salida, frente a 200 en el local.
+  - `CallBudgetChatClient` corta al llegar al límite; el coste se estima con los tokens y los precios de la
+    configuración, y cada partida deja una línea en `registros/partidas.jsonl`.
+- Alternativas: la API de Claude compatible con OpenAI (la propia Anthropic recomienda su librería); claves en
+  variables de entorno (las normas del proyecto piden user-secrets); un fichero de configuración por proveedor.

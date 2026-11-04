@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- API keys live in user-secrets, outside the repo: dotnet user-secrets set "Cronista:OpenAI:ApiKey" "..." -->
+    <UserSecretsId>cortesia-console</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.14" />
     <PackageReference Include="OpenTelemetry" Version="1.20.1" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
@@ -13,6 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CortesIA.Ai\CortesIA.Ai.csproj" />
     <ProjectReference Include="..\CortesIA.Domain\CortesIA.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Anthropic" Version="13.4.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
   </ItemGroup>
