@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Written by the Intel GPU driver when Foundry Local loads a model from this folder
 kernel.errors.txt
+
+# Call logs written by the console (one JSON line per call to a model)
+registros/

@@ -1,3 +1,4 @@
+using CortesIA.Ai.Chronicle;
 using CortesIA.Domain.Actions;
 using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
@@ -95,6 +96,18 @@ public static class Screen
         {
             console.MarkupLine($"  • {Markup.Escape(line)}");
         }
+    }
+
+    /// <summary>The model's retelling under the facts, or a grey line saying why there is none.</summary>
+    public static void ShowChronicle(IAnsiConsole console, Narration narration)
+    {
+        if (narration.Text is { } text)
+        {
+            console.Write(new Panel(new Markup($"[italic]{Markup.Escape(text)}[/]")).Header("Crónica").Border(BoxBorder.Rounded));
+            return;
+        }
+
+        console.MarkupLine($"[grey]El cronista no ha respondido: {Markup.Escape(narration.Failure ?? "")}[/]");
     }
 
     public static void ShowStandings(IAnsiConsole console, GameState state)
