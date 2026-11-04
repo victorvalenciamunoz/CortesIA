@@ -3,8 +3,8 @@ using System.Text.Json;
 
 namespace CortesIA.Ai.Models;
 
-/// <summary>Appends each call as one JSON line to a file, so later evals can read them back.</summary>
-public sealed class CallLog(string path)
+/// <summary>Appends each entry (a call, a narration…) as one JSON line to a file, so later evals can read them back.</summary>
+public sealed class JsonLinesLog(string path)
 {
     private static readonly JsonSerializerOptions Json = new()
     {
@@ -16,9 +16,9 @@ public sealed class CallLog(string path)
 
     public string Path { get; } = path;
 
-    public void Append(CallRecord call)
+    public void Append<T>(T entry)
     {
-        var line = JsonSerializer.Serialize(call, Json);
+        var line = JsonSerializer.Serialize(entry, Json);
         lock (gate)
         {
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(Path))!);

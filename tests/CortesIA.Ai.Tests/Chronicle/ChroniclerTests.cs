@@ -74,6 +74,27 @@ public class ChroniclerTests
     }
 
     [Fact]
+    public async Task A_narration_that_fails_the_check_is_discarded_but_kept_as_draft()
+    {
+        var narration = await new Chronicler(FakeChatClient.Saying("**Turno 3:** Norte ganó.")).NarrateAsync(3, Turn3, CourtId.Player, Token);
+
+        Assert.Equal(Narration.Discarded("**Turno 3:** Norte ganó.", "Usó formato (negritas, listas o títulos)."), narration);
+    }
+
+    [Fact]
+    public async Task Every_narration_is_recorded_with_its_facts_shown_or_not()
+    {
+        var records = new List<NarrationRecord>();
+        var chronicler = new Chronicler(FakeChatClient.Saying("Norte ganó con 99 lanzas."), record: records.Add);
+
+        await chronicler.NarrateAsync(3, Turn3, CourtId.Player, Token);
+
+        var entry = Assert.Single(records);
+        Assert.Equal((3, Chronicler.Facts(3, Turn3, CourtId.Player)), (entry.Turn, entry.Facts));
+        Assert.Equal((null, "Norte ganó con 99 lanzas.", "Se inventó cifras (99)."), (entry.Text, entry.Draft, entry.Failure));
+    }
+
+    [Fact]
     public async Task A_blank_answer_is_a_failure()
     {
         var narration = await new Chronicler(FakeChatClient.Saying("   ")).NarrateAsync(3, Turn3, CourtId.Player, Token);

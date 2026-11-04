@@ -39,7 +39,7 @@ public class RecordingChatClientTests
     public void The_call_log_writes_one_json_line_per_call()
     {
         var path = Path.Combine(Path.GetTempPath(), $"cortesia-{Guid.NewGuid():N}", "llamadas.jsonl");
-        var log = new CallLog(path);
+        var log = new JsonLinesLog(path);
 
         log.Append(new CallRecord(DateTimeOffset.UnixEpoch, "m", 1, 2, 0.5, "stop", null));
         log.Append(new CallRecord(DateTimeOffset.UnixEpoch, "m", null, null, 0.1, null, "Falló"));

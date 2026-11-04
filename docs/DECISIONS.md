@@ -119,3 +119,13 @@ Formato: contexto → decisión → alternativas descartadas.
     JSON (`CallLog`), además de la traza de OpenTelemetry.
 - Alternativas: dejar `Narrator` en la consola y pasar al cronista las frases ya hechas (el texto del prompt
   quedaría fuera del proyecto de IA); mantener los reintentos de la librería (8 s de espera por turno con el modelo caído).
+
+## 015 — La crónica se revisa en código antes de enseñarla
+- Contexto: con el modelo local, muchas crónicas salían con Markdown o con cifras que no estaban en los hechos.
+- Decisión:
+  - `NarrationCheck` descarta una crónica si trae negritas, listas o títulos, o algún número que no aparezca en los
+    hechos. Es a propósito sencilla: pilla los fallos vistos, no todos (no detecta un hecho falso sin cifras).
+  - La crónica descartada no se enseña, pero queda en el registro con su motivo, para las evals.
+  - El prompt lleva un ejemplo de lista y de crónica: en la comparación pasó de 17 a 30 crónicas válidas de 30.
+- Alternativas: quitar el Markdown en la consola (escondería el fallo sin arreglar las cifras); dejar que el modelo
+  se corrija pidiéndole otra vez (otra llamada de unos 9 s por turno); un modelo mayor (se verá en los pasos 5 y 6).

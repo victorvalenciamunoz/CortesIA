@@ -98,7 +98,7 @@ public static class Screen
         }
     }
 
-    /// <summary>The model's retelling under the facts, or a grey line saying why there is none.</summary>
+    /// <summary>The model's retelling under the facts, or a grey line saying why there is none (it failed or was discarded).</summary>
     public static void ShowChronicle(IAnsiConsole console, Narration narration)
     {
         if (narration.Text is { } text)
@@ -107,7 +107,7 @@ public static class Screen
             return;
         }
 
-        console.MarkupLine($"[grey]El cronista no ha respondido: {Markup.Escape(narration.Failure ?? "")}[/]");
+        console.MarkupLine($"[grey]Sin crónica: {Markup.Escape(narration.Failure ?? "")}[/]");
     }
 
     public static void ShowStandings(IAnsiConsole console, GameState state)
