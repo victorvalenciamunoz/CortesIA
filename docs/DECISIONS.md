@@ -103,3 +103,19 @@ Formato: contexto → decisión → alternativas descartadas.
     proyecto OpenTelemetry): recogen lo que escribe `UseOpenTelemetry` y lo mandan por OTLP al puerto 4317.
 - Alternativas: el contenedor de Docker del dashboard (Docker Desktop no estaba en marcha); escribir a mano el
   protocolo OTLP (sin sentido); quedarse con el registro en consola (no deja navegar ni comparar llamadas).
+
+## 014 — El cronista: proyecto CortesIA.Ai, Narrator en el dominio
+- Contexto: el paso 4 conecta el modelo con el juego; el cronista necesita las mismas frases que enseña la consola.
+- Decisión:
+  - `Narrator` pasa de la consola al dominio (`CortesIA.Domain.Chronicle`): convertir un evento en una frase fija es
+    conocimiento del juego, sin IA, y lo usan la consola, el cronista y, en la Fase 8, las evals.
+  - `CortesIA.Ai` depende del dominio (nunca al revés). El cronista recibe los eventos y la corte que lee, y filtra
+    él lo visible: el secreto no depende de quien lo llame.
+  - Los prompts van en ficheros `*.prompt.md` junto a su código, incrustados en el ensamblado.
+  - El cliente de Foundry Local va sin reintentos: con el servidor caído, la librería tardaba unos 8 s en rendirse
+    en cada turno. Fallar pronto y seguir con los hechos es mejor para el juego.
+  - Límite de 20 s por narración (provisional): con este modelo un turno tarda de 3 a 10 s.
+  - Cada llamada queda en un `CallRecord` (modelo, tokens, tiempo, motivo de parada, error) que se guarda como línea
+    JSON (`CallLog`), además de la traza de OpenTelemetry.
+- Alternativas: dejar `Narrator` en la consola y pasar al cronista las frases ya hechas (el texto del prompt
+  quedaría fuera del proyecto de IA); mantener los reintentos de la librería (8 s de espera por turno con el modelo caído).

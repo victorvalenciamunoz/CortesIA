@@ -4,7 +4,7 @@ using CortesIA.Domain.Pacts;
 
 namespace CortesIA.Domain.Chronicle;
 
-/// <summary>Something that happened in a turn, as data. Text is produced elsewhere.</summary>
+/// <summary>Something that happened in a turn, as data. <see cref="Narrator"/> turns it into a sentence.</summary>
 public abstract record GameEvent(int Turn)
 {
     /// <summary>Most events are public; the details of a pact are only known to its parties.</summary>

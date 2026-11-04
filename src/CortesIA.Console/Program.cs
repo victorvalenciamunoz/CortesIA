@@ -1,16 +1,26 @@
 using System.Globalization;
+using CortesIA.Ai.Chronicle;
+using CortesIA.Ai.Models;
 using CortesIA.Console;
+using CortesIA.Domain.Chronicle;
 using CortesIA.Domain.Courts;
 using CortesIA.Domain.Game;
 using CortesIA.Domain.Players;
 using CortesIA.Domain.Rivals;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Spectre.Console;
 
-// dotnet run --project src/CortesIA.Console -- [semilla] [--mirar]
+// dotnet run --project src/CortesIA.Console -- [semilla] [--mirar] [--sin-cronista]
 // With --mirar nobody asks you anything: your court is played by the greedy rule and you watch the whole game.
+// With --sin-cronista the local model is not called and only the fixed facts are shown.
 const string WatchFlag = "--mirar";
+const string NoChroniclerFlag = "--sin-cronista";
 var watch = args.Contains(WatchFlag);
-var seed = args.Where(a => a != WatchFlag).Select(a => (int?)int.Parse(a, CultureInfo.InvariantCulture)).FirstOrDefault()
+var withChronicler = !args.Contains(NoChroniclerFlag);
+var seed = args.Where(a => !a.StartsWith("--")).Select(a => (int?)int.Parse(a, CultureInfo.InvariantCulture)).FirstOrDefault()
     ?? Random.Shared.Next(1, 10_000);
 
 var console = AnsiConsole.Console;
@@ -22,11 +32,22 @@ var players = new Dictionary<CourtId, ICourtPlayer>
 };
 var match = new Match(players, new SeededDice(seed));
 
+// Every call to the model goes to a JSON-lines file and, if the Aspire dashboard is running, to the dashboard.
+// If it is not running, the exporters drop the data silently.
+var log = new CallLog(Path.Combine("registros", $"llamadas-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.jsonl"));
+var service = ResourceBuilder.CreateDefault().AddService("CortesIA.Console");
+using var traces = Sdk.CreateTracerProviderBuilder().SetResourceBuilder(service).AddSource(LocalModel.TelemetrySource).AddOtlpExporter().Build();
+using var metrics = Sdk.CreateMeterProviderBuilder().SetResourceBuilder(service).AddMeter(LocalModel.TelemetrySource).AddOtlpExporter().Build();
+var chronicler = withChronicler ? new Chronicler(LocalModel.Create(LocalModelSettings.Default, log.Append)) : null;
+
 console.Write(new Rule("[bold]CortesIA[/]"));
 console.MarkupLine(watch
     ? "Mirando una partida: Jugador y Norte juegan con la regla codiciosa, Sur al azar."
     : "Juegas como [bold]Jugador[/]. Norte juega con la regla codiciosa y Sur al azar. Gana el mayor prestigio al acabar el turno 15.");
 console.MarkupLine($"[grey]Semilla {seed}. Para repetir la partida: dotnet run --project src/CortesIA.Console -- {seed}{(watch ? " " + WatchFlag : "")}[/]");
+console.MarkupLine(chronicler is null
+    ? "[grey]Sin cronista.[/]"
+    : $"[grey]Cronista: {LocalModelSettings.Default.Model} en {LocalModelSettings.Default.Endpoint}. Llamadas en {Markup.Escape(log.Path)}.[/]");
 Screen.ShowIntro(console);
 if (!watch)
 {
@@ -42,6 +63,12 @@ while (!match.State.IsOver)
     // When playing, diplomacy was already shown before choosing the action, and only what your court may see is shown.
     var shown = watch ? events : events.Where(e => e.IsVisibleTo(CourtId.Player) && !Narrator.IsDiplomacy(e));
     Screen.ShowEvents(console, $"Qué pasó en el turno {turn}", shown);
+
+    if (chronicler is not null)
+    {
+        var narration = await console.Status().StartAsync("El cronista escribe…", _ => chronicler.NarrateAsync(turn, events, CourtId.Player));
+        Screen.ShowChronicle(console, narration);
+    }
 }
 
 Screen.ShowStandings(console, match.State);
