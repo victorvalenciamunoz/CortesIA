@@ -40,7 +40,7 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Prompt del cronista, versión 2: con un ejemplo de lista y de crónica buena (ver la comparación abajo).
 - **Modelos en la nube** (ver DECISIONS 016): `--cronista=openai` (gpt-5.6-luna, el mismo adaptador de OpenAI que
   Foundry) o `--cronista=claude` (Claude Sonnet 5.5, con la librería oficial `Anthropic`). Modelo, dirección, límites
-  y precios en `src/CortesIA.Console/appsettings.json`; las claves en user-secrets (`Cronista:OpenAI:ApiKey`,
+  y precios en `src/CortesIA.Ai/models.json`; las claves en user-secrets (`Cronista:OpenAI:ApiKey`,
   `Cronista:Claude:ApiKey`). Máximo 30 llamadas por partida. Al acabar, llamadas, tokens y coste estimado en
   pantalla y en `registros/partidas.jsonl`. Sin clave, la consola dice cómo guardarla y juega sin cronista.
 
