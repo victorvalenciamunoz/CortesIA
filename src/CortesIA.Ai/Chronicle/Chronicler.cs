@@ -71,7 +71,7 @@ public sealed class Chronicler(
         try
         {
             ChatMessage[] messages = [new(ChatRole.System, systemPrompt), new(ChatRole.User, facts)];
-            var response = await model.GetResponseAsync(messages, new ChatOptions { MaxOutputTokens = 200 }, limit.Token).WaitAsync(limit.Token);
+            var response = await model.GetResponseAsync(messages, new ChatOptions(), limit.Token).WaitAsync(limit.Token);
             var text = response.Text.Trim();
             if (text.Length == 0)
             {
