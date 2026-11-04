@@ -54,7 +54,30 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - [x] Paso 4b: el cronista narra cada turno en la consola; si falla o tarda, quedan los hechos (2026-11-04)
 - [x] Paso 4c: revisión de la crónica en código y prompt con ejemplo, medido antes y después (2026-11-04)
 - [x] Paso 5: OpenAI y Claude por configuración, con límite de llamadas y coste estimado (2026-11-04)
-- [ ] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md`
+- [x] Paso 6: juez (tiempos y tokens por proveedor, modelo apagado) y página `01-cliente-de-chat.md` (2026-11-04)
+- [ ] El autor responde las preguntas guía de [01-cliente-de-chat.md](conceptos/01-cliente-de-chat.md). Con eso se
+  cierra la fase.
+
+## Juez de la Fase 1: el cronista (2 partidas, semillas 7 y 11)
+
+`dotnet run --project src/CortesIA.Evals -- cronista`: las mismas partidas narradas por cada modelo configurado, y
+cada uno contra una dirección donde no escucha nadie. Cada narración queda en `registros/eval-*/`.
+
+| Modelo | Narraciones | Enseñadas | Descartadas | Tiempo medio | Tiempo máximo | Tokens de entrada (media) | De salida (media) | Coste |
+|---|---|---|---|---|---|---|---|---|
+| qwen2.5-1.5b (local) | 30 | 30 | 0 | 7,7 s | 15,7 s | 398 | 70 | 0 $ |
+| gpt-5.6-luna | 30 | 30 | 0 | 1,9 s | 3,3 s | 355 | 70 | 0,0047 $ |
+| Claude Sonnet 5.5 | 30 | 30 | 0 | 2,5 s | 3,6 s | 576 | 155 | 0,0811 $ |
+
+Con el servidor caído, los tres se rinden en 2,0 s y la partida sigue con los hechos.
+
+Lectura:
+- Con el prompt con ejemplo, los tres pasan la revisión en código. La revisión ya no separa a los modelos; lo que
+  los separa es cómo narran: el local copia los hechos y el "Mientras" del ejemplo; gpt-5.6-luna es exacto y sobrio;
+  Claude Sonnet 5.5 es exacto y narra con más voz. Medir eso es trabajo de la Fase 8 (evals).
+- La nube es 3-4 veces más rápida que el modelo local en este ordenador.
+- Claude costó 17 veces más que gpt-5.6-luna por el mismo trabajo (más caro por token y escribe el doble). Yo había
+  estimado unos 0,04 $ para todo el juez; costó 0,086 $.
 
 ## Fallos y sorpresas (para la página de conceptos)
 - **El modelo hay que cargarlo antes** (`foundry model load qwen2.5-1.5b`). Si no, la llamada falla al momento con
@@ -130,6 +153,10 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - El puerto es fijo (54311) porque está puesto en la configuración de Foundry (`foundry config show`).
 - Un texto con acentos pasado a `curl` desde Git Bash llega mal codificado y el servidor lo rechaza; desde C# va bien.
 
+- **El modelo local atiende de uno en uno:** con el juez en marcha, otra llamada falló con "Infer Request is busy".
+- **Cada librería explica el fallo a su manera:** con el servidor caído, la de OpenAI dice "denegó expresamente
+  dicha conexión (127.0.0.1:1)" y la de Anthropic solo "I/O exception".
+
 ## Cómo se validó
 - Paso 1: cuatro ejecuciones del ejemplo (unos 2,5 s cada una; 68 tokens de entrada y 59 de salida) y una contra un
   puerto sin servidor, que acaba con un mensaje claro y código de error 1.
@@ -157,3 +184,5 @@ La Fase 0 (el juego sin IA) está cerrada; su resumen, con el torneo de referenc
 - Paso 5: 2 tests nuevos (límite de llamadas y coste estimado), 133 en total. Una partida entera con el modelo local
   tras el cambio (15 de 15 crónicas, 7,4 s de media). Sin clave, la consola avisa y juega sin cronista. Las claves,
   comprobadas sin verlas: nombre y comienzo (`sk-pro…`, `sk-ant…`) y una llamada a cada modelo.
+- Paso 6: el propio juez (tablas de arriba), con los tres modelos; y el ejemplo mínimo de la página de conceptos,
+  compilado y ejecutado contra Foundry Local tal como está escrito.

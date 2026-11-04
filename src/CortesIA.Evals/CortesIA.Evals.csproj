@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CortesIA.Domain\CortesIA.Domain.csproj" />
+    <ProjectReference Include="..\CortesIA.Ai\CortesIA.Ai.csproj" />
   </ItemGroup>
 
 </Project>

@@ -43,7 +43,7 @@ var service = ResourceBuilder.CreateDefault().AddService("CortesIA.Console");
 using var traces = Sdk.CreateTracerProviderBuilder().SetResourceBuilder(service).AddSource(ChatModels.TelemetrySource).AddOtlpExporter().Build();
 using var metrics = Sdk.CreateMeterProviderBuilder().SetResourceBuilder(service).AddMeter(ChatModels.TelemetrySource).AddOtlpExporter().Build();
 
-var settings = ChroniclerSettings.For(ChroniclerSettings.Load(), provider);
+var settings = ModelConfiguration.For(ModelConfiguration.Load(), provider);
 var calls = new List<CallRecord>();
 var missingKey = settings.NeedsKey && string.IsNullOrWhiteSpace(settings.ApiKey);
 var chronicler = args.Contains(NoChroniclerFlag) || missingKey
@@ -59,7 +59,7 @@ console.MarkupLine(watch
 console.MarkupLine($"[grey]Semilla {seed}. Para repetir la partida: dotnet run --project src/CortesIA.Console -- {seed}{(watch ? " " + WatchFlag : "")}[/]");
 if (missingKey)
 {
-    console.MarkupLine($"[yellow]Sin cronista: falta la clave de {provider}. Guárdala con:[/] {Markup.Escape(ChroniclerSettings.KeyCommand(provider))}");
+    console.MarkupLine($"[yellow]Sin cronista: falta la clave de {provider}. Guárdala con:[/] {Markup.Escape(ModelConfiguration.KeyCommand(provider))}");
 }
 
 console.MarkupLine(chronicler is null
@@ -110,5 +110,5 @@ if (calls.Count > 0)
     };
     new JsonLinesLog(Path.Combine("registros", "partidas.jsonl")).Append(summary);
     console.MarkupLine($"[grey]Cronista: {summary.Calls} llamadas ({summary.Failed} fallidas), {summary.InputTokens} tokens de entrada y " +
-        $"{summary.OutputTokens} de salida, {summary.Seconds} s de media. Coste estimado: {summary.EstimatedCost.ToString(CultureInfo.InvariantCulture)} $.[/]");
+        $"{summary.OutputTokens} de salida, {summary.Seconds} s de media. Coste estimado: {summary.EstimatedCost.ToString(CultureInfo.GetCultureInfo("es-ES"))} $.[/]");
 }

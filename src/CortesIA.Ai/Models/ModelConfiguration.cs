@@ -1,16 +1,21 @@
 using System.Globalization;
-using CortesIA.Ai.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace CortesIA.Console;
+namespace CortesIA.Ai.Models;
 
-/// <summary>Reads the chronicler's model from appsettings.json (model, address, limits, prices) and user-secrets (key).</summary>
-public static class ChroniclerSettings
+/// <summary>
+/// Reads each model's settings from <c>models.json</c> (model, address, limits, prices) and its key from user-secrets.
+/// Shared by every program that calls a model, so the console and the evals use the same models.
+/// </summary>
+public static class ModelConfiguration
 {
+    /// <summary>The user-secrets store, the one set with <c>dotnet user-secrets ... --project src/CortesIA.Console</c>.</summary>
+    public const string SecretsId = "cortesia-console";
+
     public static IConfiguration Load() => new ConfigurationBuilder()
         .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json")
-        .AddUserSecrets(typeof(ChroniclerSettings).Assembly)
+        .AddJsonFile("models.json")
+        .AddUserSecrets(SecretsId)
         .Build();
 
     public static ModelSettings For(IConfiguration configuration, Provider provider)
@@ -18,7 +23,7 @@ public static class ChroniclerSettings
         var section = configuration.GetSection($"Cronista:{provider}");
         return new ModelSettings(
             provider,
-            section["Model"] ?? throw new InvalidOperationException($"Falta Cronista:{provider}:Model en appsettings.json."),
+            section["Model"] ?? throw new InvalidOperationException($"Falta Cronista:{provider}:Model en models.json."),
             section["Endpoint"] is { } endpoint ? new Uri(endpoint) : null,
             section["ApiKey"],
             Number(section["MaxCalls"]) is { } maxCalls ? (int)maxCalls : null,
