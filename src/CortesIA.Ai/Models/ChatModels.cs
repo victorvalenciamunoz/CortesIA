@@ -49,7 +49,8 @@ public static class ChatModels
                 new OpenAIClientOptions { Endpoint = settings.Endpoint, RetryPolicy = new ClientRetryPolicy(maxRetries: 0) })
             .GetChatClient(settings.Model)
             .AsIChatClient(),
-        Provider.Claude => new AnthropicClient { ApiKey = settings.ApiKey, MaxRetries = 0 }.AsIChatClient(settings.Model),
+        Provider.Claude => new AnthropicClient { ApiKey = settings.ApiKey, MaxRetries = 0, BaseUrl = settings.Endpoint?.ToString() ?? "https://api.anthropic.com" }
+            .AsIChatClient(settings.Model),
         _ => throw new ArgumentOutOfRangeException(nameof(settings), settings.Provider, null),
     };
 }

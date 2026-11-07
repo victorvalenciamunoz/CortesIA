@@ -13,7 +13,7 @@ public enum Provider
 }
 
 /// <summary>Which model to call and how. Read from configuration; the key never lives in git.</summary>
-/// <param name="Endpoint">Only for the OpenAI adapter (Foundry Local, OpenAI); the Anthropic library knows its own.</param>
+/// <param name="Endpoint">Where the API lives. For Claude it is optional: the Anthropic library knows its own.</param>
 /// <param name="MaxCalls">Calls allowed per run; null means no limit (the local model costs nothing).</param>
 /// <param name="MaxOutputTokens">
 /// Cloud models think before answering and that thinking counts as output, so they need far more room than the

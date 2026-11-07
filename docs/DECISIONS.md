@@ -138,7 +138,7 @@ Formato: contexto → decisión → alternativas descartadas.
     `ChatModels.Create` devuelve un `IChatClient`: el cronista no sabe qué proveedor hay detrás.
   - OpenAI usa el mismo adaptador que Foundry Local; Claude, la librería oficial `Anthropic` 13.4.0 (Apache-2.0),
     que trae su propio `IChatClient`. Ambos sin reintentos.
-  - Configuración en `appsettings.json` (sin secretos) y claves en user-secrets, con
+  - Configuración en `appsettings.json` (sin secretos; en el paso 6 pasó a `src/CortesIA.Ai/models.json`) y claves en user-secrets, con
     `Microsoft.Extensions.Configuration.UserSecrets` 10.0.14 (MIT).
   - Los modelos de la nube razonan antes de contestar y ese razonamiento cuenta como salida: razonamiento bajo y
     2.000 tokens de salida, frente a 200 en el local.

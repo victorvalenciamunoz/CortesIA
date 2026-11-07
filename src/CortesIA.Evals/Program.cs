@@ -1,8 +1,35 @@
 using System.Globalization;
+using CortesIA.Ai.Models;
 using CortesIA.Domain.Courts;
 using CortesIA.Evals;
 
-// dotnet run --project src/CortesIA.Evals -- [partidas] [semilla]
+// dotnet run --project src/CortesIA.Evals -- [partidas] [semilla]   the Phase 0 tournament (no models)
+// dotnet run --project src/CortesIA.Evals -- cronista                the Phase 1 judge (calls the models; costs money)
+if (args is ["cronista", ..])
+{
+    int[] seeds = [7, 11];
+    var configuration = ModelConfiguration.Load();
+    var logDirectory = Path.Combine("registros", $"eval-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}");
+    var results = new List<ProviderResult>();
+    foreach (var provider in Enum.GetValues<Provider>())
+    {
+        var settings = ModelConfiguration.For(configuration, provider);
+        if (settings.NeedsKey && string.IsNullOrWhiteSpace(settings.ApiKey))
+        {
+            Console.Error.WriteLine($"{provider}: sin clave, no se evalúa. {ModelConfiguration.KeyCommand(provider)}");
+            continue;
+        }
+
+        Console.Error.WriteLine($"{provider}: {settings.Model}…");
+        results.Add(await ChroniclerEval.RunAsync(settings, seeds, logDirectory));
+    }
+
+    ChroniclerEval.Print(results, seeds);
+    Console.WriteLine();
+    Console.WriteLine($"Cada narración, con sus hechos, en {logDirectory}.");
+    return 0;
+}
+
 var games = args.Length > 0 ? int.Parse(args[0], CultureInfo.InvariantCulture) : 1000;
 var seed = args.Length > 1 ? int.Parse(args[1], CultureInfo.InvariantCulture) : 1;
 
